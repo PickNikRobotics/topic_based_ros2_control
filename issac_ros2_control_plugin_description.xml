@@ -1,0 +1,9 @@
+<library path="issac_ros2_control">
+
+<class name="issac_ros2_control/IssacSystem" type="issac_ros2_control::IssacSystem" base_class_type="hardware_interface::SystemInterface">
+    <description>
+        TODO
+    </description>
+  </class>
+
+</library>

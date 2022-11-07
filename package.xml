@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="3">
+    <name>issac_ros2_control</name>
+    <version>0.0.1</version>
+    <description>TODO: Project Short Description</description>
+
+    <maintainer email="jafar@picknik.ai">Jafar</maintainer>
+    <author email="jafar@picknik.ai">Jafar</author>
+
+    <license>BSD</license>
+
+    <url type="website">https://github.com/PickNikRobotics/issac_ros2_control</url>
+    <url type="bugtracker">https://github.com/PickNikRobotics/issac_ros2_control/issues</url>
+    <url type="repository">https://github.com/PickNikRobotics/issac_ros2_control/</url>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>s
+    <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+    <buildtool_export_depend>eigen3_cmake_module</buildtool_export_depend>
+
+    <depend>eigen</depend>
+    <depend>rclcpp</depend>
+
+    <test_depend>ament_lint_auto</test_depend>
+    <test_depend>ament_lint_common</test_depend>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>
