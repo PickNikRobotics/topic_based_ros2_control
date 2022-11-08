@@ -48,14 +48,13 @@ CallbackReturn IssacSystem::on_init(const hardware_interface::HardwareInfo& info
     return CallbackReturn::ERROR;
   }
 
-  // Initialize storage for all joints' standard interfaces, regardless of their existence and set all values without
-  // initial values to 0
+  // Initialize storage for all joints' standard interfaces, regardless of their existence and set all values to nan
   joint_commands_.resize(standard_interfaces_.size());
   joint_states_.resize(standard_interfaces_.size());
   for (auto i = 0u; i < standard_interfaces_.size(); i++)
   {
-    joint_commands_[i].resize(info_.joints.size(), 0.0);
-    joint_states_[i].resize(info_.joints.size(), 0.0);
+    joint_commands_[i].resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    joint_states_[i].resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   }
 
   const auto get_hardware_parameter = [this](const std::string& parameter_name, const std::string& default_value) {
