@@ -2,7 +2,7 @@
 
 <class name="issac_ros2_control/IssacSystem" type="issac_ros2_control::IssacSystem" base_class_type="hardware_interface::SystemInterface">
     <description>
-        TODO
+        ros2_control hardware interface for NVidia Issac sim.
     </description>
   </class>
 
