@@ -91,6 +91,10 @@ To test the packages in issac_ros2_control, use the following command with [colc
     colcon test --packages-select ${TEST_PACKAGES}
     colcon test-result
 
+To add a copyright for a new file
+
+    ament_copyright --add0missing picknik bsd_3clause .
+
 ### Using ccache
 
 ccache is a useful tool to speed up compilation times with GCC or any other sufficiently similar compiler.

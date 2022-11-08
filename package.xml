@@ -21,6 +21,7 @@
     <depend>rclcpp</depend>
 
     <test_depend>ament_lint_auto</test_depend>
+    <test_depend>picknik_ament_copyright</test_depend>
     <test_depend>ament_lint_common</test_depend>
 
     <export>

@@ -47,23 +47,6 @@ repos:
     rev: 20.8b1
     hooks:
       - id: black
-  - repo: local
-    hooks:
-      - id: ament_copyright
-        name: ament_copyright
-        language: system
-        entry: ament_copyright
-        args: ['--add-missing', 'picknik', 'bsd_3clause', '.']
-  # Cmake hooks
-  - repo: local
-    hooks:
-      - id: ament_lint_cmake
-        name: ament_lint_cmake
-        description: Check format of CMakeLists.txt files.
-        stages: [commit]
-        entry: ament_lint_cmake
-        language: system
-        files: CMakeLists\.txt$
   - repo: https://github.com/codespell-project/codespell
     rev: v2.0.0
     hooks:
