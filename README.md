@@ -93,7 +93,7 @@ To test the packages in issac_ros2_control, use the following command with [colc
 
 To add a copyright for a new file
 
-    ament_copyright --add0missing picknik bsd_3clause .
+    ament_copyright --add-missing picknik bsd_3clause .
 
 ### Using ccache
 
