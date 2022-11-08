@@ -1,6 +1,6 @@
 # Issac Ros2 Control
 
-Description: TODO(GITHUB_NAME):
+Description: This is a ROS 2 package for integrating the ros2_control with the [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac-sim).
 
 
 <img src="https://picknik.ai/assets/images/logo.jpg" width="100">
