@@ -54,7 +54,7 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info
   for (auto i = 0u; i < standard_interfaces_.size(); i++)
   {
     joint_commands_[i].resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-    joint_states_[i].resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    joint_states_[i].resize(info_.joints.size(), 0.0);
   }
 
   const auto get_hardware_parameter = [this](const std::string& parameter_name, const std::string& default_value) {
