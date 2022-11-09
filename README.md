@@ -1,11 +1,11 @@
-# Issac Ros2 Control
+# Isaac Ros2 Control
 
 Description: This is a ROS 2 package for integrating the ros2_control with the [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac-sim).
 
 
 <img src="https://picknik.ai/assets/images/logo.jpg" width="100">
 
-[![Build Status](https://github.com/PickNikRobotics/issac_ros2_control/actions/workflows/build_and_test.yaml/badge.svg)](https://github.com/PickNikRobotics/issac_ros2_control/actions/workflows/build_and_test.yaml)
+[![Build Status](https://github.com/PickNikRobotics/isaac_ros2_control/actions/workflows/build_and_test.yaml/badge.svg)](https://github.com/PickNikRobotics/isaac_ros2_control/actions/workflows/build_and_test.yaml)
 
 ## Installation
 
@@ -31,12 +31,12 @@ These instructions assume you are running on Ubuntu 20.04:
 4. Get the repo:
 
         cd $COLCON_WS/src
-        git clone git@github.com:PickNikRobotics/issac_ros2_control.git
+        git clone git@github.com:PickNikRobotics/isaac_ros2_control.git
 
 5. Download the required repositories and install any dependencies:
 
         cd $COLCON_WS/src
-        vcs import < issac_ros2_control/issac_ros2_control.repos
+        vcs import < isaac_ros2_control/isaac_ros2_control.repos
         rosdep install --ignore-src --from-paths . -y
 
         # Pick a ROS_DOMAIN_ID that doesn't clash with others
@@ -59,11 +59,11 @@ These instructions assume you are running on Ubuntu 20.04:
 
 To make sure you have the latest repos:
 
-      cd $COLCON_WS/src/issac_ros2_control
+      cd $COLCON_WS/src/isaac_ros2_control
       git checkout main
       git pull origin main
       cd $COLCON_WS/src
-      vcs import < issac_ros2_control/issac_ros2_control.repos
+      vcs import < isaac_ros2_control/isaac_ros2_control.repos
       rosdep install --from-paths . --ignore-src -y
 
 ### Setup pre-commit
@@ -84,7 +84,7 @@ pre-commit install
 
 ### Testing and Linting
 
-To test the packages in issac_ros2_control, use the following command with [colcon](https://colcon.readthedocs.io/en/released/).
+To test the packages in isaac_ros2_control, use the following command with [colcon](https://colcon.readthedocs.io/en/released/).
 
     export TEST_PACKAGES="PROJECT_PACKAGE_NAMES"
     colcon build --packages-up-to ${TEST_PACKAGES}

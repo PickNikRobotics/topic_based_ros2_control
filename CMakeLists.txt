@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(issac_ros2_control CXX)
+project(isaac_ros2_control CXX)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wshadow
@@ -26,7 +26,7 @@ endforeach()
 # Declare a C++ library
 add_library(
   ${PROJECT_NAME}
-  src/issac_system.cpp
+  src/isaac_system.cpp
 )
 ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_include_directories(${PROJECT_NAME}
@@ -62,13 +62,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   # GTests
-  ament_add_gtest(issac_system_test test/issac_system_test.cpp)
-  target_link_libraries(issac_system_test
+  ament_add_gtest(isaac_system_test test/isaac_system_test.cpp)
+  target_link_libraries(isaac_system_test
     ${PROJECT_NAME})
-  ament_target_dependencies(issac_system_test ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  ament_target_dependencies(isaac_system_test ${THIS_PACKAGE_INCLUDE_DEPENDS})
 endif()
 
-pluginlib_export_plugin_description_file(hardware_interface issac_ros2_control_plugin_description.xml)
+pluginlib_export_plugin_description_file(hardware_interface isaac_ros2_control_plugin_description.xml)
 ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()

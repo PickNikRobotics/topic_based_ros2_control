@@ -35,13 +35,13 @@
 #include <string>
 #include <vector>
 
-#include <issac_ros2_control/issac_system.hpp>
+#include <isaac_ros2_control/isaac_system.hpp>
 #include <rclcpp/executors.hpp>
 
-namespace issac_ros2_control
+namespace isaac_ros2_control
 {
 
-CallbackReturn IssacSystem::on_init(const hardware_interface::HardwareInfo& info)
+CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info)
 {
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
   {
@@ -65,17 +65,17 @@ CallbackReturn IssacSystem::on_init(const hardware_interface::HardwareInfo& info
     return default_value;
   };
 
-  node_ = rclcpp::Node::make_shared("issac_ros2_control");
-  issac_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
+  node_ = rclcpp::Node::make_shared("isaac_ros2_control");
+  isaac_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
       get_hardware_parameter("joint_commands_topic", "/joint_command"), rclcpp::QoS(1));
-  issac_joint_states_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
-      get_hardware_parameter("joint_states_topic", "/issac_joint_states"), rclcpp::SensorDataQoS(),
+  isaac_joint_states_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
+      get_hardware_parameter("joint_states_topic", "/isaac_joint_states"), rclcpp::SensorDataQoS(),
       [this](const sensor_msgs::msg::JointState::SharedPtr joint_state) { latest_joint_state_ = *joint_state; });
 
   return CallbackReturn::SUCCESS;
 }
 
-std::vector<hardware_interface::StateInterface> IssacSystem::export_state_interfaces()
+std::vector<hardware_interface::StateInterface> IsaacSystem::export_state_interfaces()
 {
   std::vector<hardware_interface::StateInterface> state_interfaces;
 
@@ -96,7 +96,7 @@ std::vector<hardware_interface::StateInterface> IssacSystem::export_state_interf
   return state_interfaces;
 }
 
-std::vector<hardware_interface::CommandInterface> IssacSystem::export_command_interfaces()
+std::vector<hardware_interface::CommandInterface> IsaacSystem::export_command_interfaces()
 {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
 
@@ -116,7 +116,7 @@ std::vector<hardware_interface::CommandInterface> IssacSystem::export_command_in
   return command_interfaces;
 }
 
-hardware_interface::return_type IssacSystem::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
+hardware_interface::return_type IsaacSystem::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
   rclcpp::spin_some(node_);
   for (std::size_t i = 0; i < latest_joint_state_.name.size(); ++i)
@@ -138,7 +138,7 @@ hardware_interface::return_type IssacSystem::read(const rclcpp::Time& /*time*/, 
 }
 
 template <typename HandleType>
-bool IssacSystem::getInterface(const std::string& name, const std::string& interface_name, const size_t vector_index,
+bool IsaacSystem::getInterface(const std::string& name, const std::string& interface_name, const size_t vector_index,
                                std::vector<std::vector<double>>& values, std::vector<HandleType>& interfaces)
 {
   auto it = std::find(standard_interfaces_.begin(), standard_interfaces_.end(), interface_name);
@@ -151,7 +151,7 @@ bool IssacSystem::getInterface(const std::string& name, const std::string& inter
   return false;
 }
 
-hardware_interface::return_type IssacSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
+hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
   if (std::all_of(joint_commands_[0].cbegin(), joint_commands_[0].cend(),
                   [](const double joint_command) { return std::isnan(joint_command); }))
@@ -168,11 +168,11 @@ hardware_interface::return_type IssacSystem::write(const rclcpp::Time& /*time*/,
     joint_state.velocity.push_back(joint_commands_[1][i]);
     joint_state.effort.push_back(joint_commands_[3][i]);
   }
-  issac_joint_commands_publisher_->publish(joint_state);
+  isaac_joint_commands_publisher_->publish(joint_state);
 
   return hardware_interface::return_type::OK;
 }
-}  // end namespace issac_ros2_control
+}  // end namespace isaac_ros2_control
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(issac_ros2_control::IssacSystem, hardware_interface::SystemInterface)
+PLUGINLIB_EXPORT_CLASS(isaac_ros2_control::IsaacSystem, hardware_interface::SystemInterface)
