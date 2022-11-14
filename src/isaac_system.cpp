@@ -38,6 +38,8 @@
 #include <isaac_ros2_control/isaac_system.hpp>
 #include <rclcpp/executors.hpp>
 
+static constexpr auto EPSILON = 1e-5;
+
 namespace isaac_ros2_control
 {
 
@@ -56,6 +58,7 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info
     joint_commands_[i].resize(info_.joints.size(), 0.0);
     joint_states_[i].resize(info_.joints.size(), 0.0);
   }
+  last_position_command_.resize(info_.joints.size(), 0.0);
 
   // Initial command values
   for (auto i = 0u; i < info_.joints.size(); i++)
@@ -201,12 +204,6 @@ bool IsaacSystem::getInterface(const std::string& name, const std::string& inter
 
 hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
-  if (std::all_of(joint_commands_[0].cbegin(), joint_commands_[0].cend(),
-                  [](const double joint_command) { return std::isnan(joint_command); }))
-  {
-    return hardware_interface::return_type::OK;
-  }
-
   sensor_msgs::msg::JointState joint_state;
   for (std::size_t i = 0; i < info_.joints.size(); ++i)
   {
@@ -227,7 +224,17 @@ hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/,
         mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
   }
 
+  // To avoid spamming Isaac's joint command topic we check the difference between the last sent joint commands and the
+  // current joint commands, if it's smaller than EPSILON we don't publish it.
+  if (std::transform_reduce(
+          last_position_command_.cbegin(), last_position_command_.cend(), joint_state.position.cbegin(), 0.0,
+          [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{}) <= EPSILON)
+  {
+    return hardware_interface::return_type::OK;
+  }
+
   isaac_joint_commands_publisher_->publish(joint_state);
+  last_position_command_ = joint_state.position;
 
   return hardware_interface::return_type::OK;
 }

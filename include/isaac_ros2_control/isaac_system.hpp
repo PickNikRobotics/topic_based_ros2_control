@@ -87,6 +87,7 @@ private:
 
   /// The size of this vector is (standard_interfaces_.size() x nr_joints)
   std::vector<std::vector<double>> joint_commands_;
+  std::vector<double> last_position_command_;
   std::vector<std::vector<double>> joint_states_;
 
   template <typename HandleType>
