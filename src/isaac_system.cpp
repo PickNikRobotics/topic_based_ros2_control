@@ -116,7 +116,12 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info
     return default_value;
   };
 
-  node_ = rclcpp::Node::make_shared("isaac_ros2_control");
+  // Add random ID to prevent warnings about multiple publishers within the same node
+  rclcpp::NodeOptions options;
+  options.arguments({ "--ros-args", "-r", "__node:=isaac_ros2_control_" + info_.name });
+  auto node = rclcpp::Node::make_shared("_", options);
+
+  node_ = rclcpp::Node::make_shared("_", options);
   isaac_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
       get_hardware_parameter("joint_commands_topic", "/joint_command"), rclcpp::QoS(1));
   isaac_joint_states_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
