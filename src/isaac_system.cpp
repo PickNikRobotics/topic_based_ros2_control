@@ -53,8 +53,28 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info
   joint_states_.resize(standard_interfaces_.size());
   for (auto i = 0u; i < standard_interfaces_.size(); i++)
   {
-    joint_commands_[i].resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    joint_commands_[i].resize(info_.joints.size(), 0.0);
     joint_states_[i].resize(info_.joints.size(), 0.0);
+  }
+
+  // Initial command values
+  for (auto i = 0u; i < info_.joints.size(); i++)
+  {
+    const auto& component = info_.joints[i];
+    for (const auto& interface : component.state_interfaces)
+    {
+      auto it = std::find(standard_interfaces_.begin(), standard_interfaces_.end(), interface.name);
+      // If interface name is found in the interfaces list
+      if (it != standard_interfaces_.end())
+      {
+        auto index = static_cast<std::size_t>(std::distance(standard_interfaces_.begin(), it));
+        // Check the initial_value param is used
+        if (!interface.initial_value.empty())
+        {
+          joint_commands_[index][i] = std::stod(interface.initial_value);
+        }
+      }
+    }
   }
 
   // Search for mimic joints
