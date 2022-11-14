@@ -1,6 +1,0 @@
-# Used with vcstool, users can download and source of all packages in this.
-repositories:
-  isaac_ros2_control:
-     type: git
-     url: git@github.com:PickNikRobotics/isaac_ros2_control.git
-     version: main

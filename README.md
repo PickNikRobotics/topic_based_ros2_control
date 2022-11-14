@@ -28,21 +28,18 @@ These instructions assume you are running on Ubuntu 20.04:
         export COLCON_WS=~/ws_ros2/
         mkdir -p $COLCON_WS/src
 
-4. Get the repo:
+4. Get the repo and install any dependencies:
 
         cd $COLCON_WS/src
         git clone git@github.com:PickNikRobotics/isaac_ros2_control.git
 
-5. Download the required repositories and install any dependencies:
-
-        cd $COLCON_WS/src
-        vcs import < isaac_ros2_control/isaac_ros2_control.repos
         rosdep install --ignore-src --from-paths . -y
 
         # Pick a ROS_DOMAIN_ID that doesn't clash with others
+        # This one need to be the same value as Isaac's domain id (0 by default)
         echo 'export ROS_DOMAIN_ID='<YOUR-NUMBER> >> ~/.bashrc
 
-7. Configure and build the workspace:
+5. Configure and build the workspace:
 
         cd $COLCON_WS
         colcon build --symlink-install --event-handlers log-
@@ -63,7 +60,6 @@ To make sure you have the latest repos:
       git checkout main
       git pull origin main
       cd $COLCON_WS/src
-      vcs import < isaac_ros2_control/isaac_ros2_control.repos
       rosdep install --from-paths . --ignore-src -y
 
 ### Setup pre-commit
