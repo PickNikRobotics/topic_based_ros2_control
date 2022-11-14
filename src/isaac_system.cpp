@@ -57,6 +57,34 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info
     joint_states_[i].resize(info_.joints.size(), 0.0);
   }
 
+  // Search for mimic joints
+  for (auto i = 0u; i < info_.joints.size(); ++i)
+  {
+    const auto& joint = info_.joints.at(i);
+    if (joint.parameters.find("mimic") != joint.parameters.cend())
+    {
+      const auto mimicked_joint_it = std::find_if(
+          info_.joints.begin(), info_.joints.end(),
+          [&mimicked_joint = joint.parameters.at("mimic")](const hardware_interface::ComponentInfo& joint_info) {
+            return joint_info.name == mimicked_joint;
+          });
+      if (mimicked_joint_it == info_.joints.cend())
+      {
+        throw std::runtime_error(std::string("Mimicked joint '") + joint.parameters.at("mimic") + "' not found");
+      }
+      MimicJoint mimic_joint;
+      mimic_joint.joint_index = i;
+      mimic_joint.mimicked_joint_index =
+          static_cast<std::size_t>(std::distance(info_.joints.begin(), mimicked_joint_it));
+      auto param_it = joint.parameters.find("multiplier");
+      if (param_it != joint.parameters.end())
+      {
+        mimic_joint.multiplier = std::stod(joint.parameters.at("multiplier"));
+      }
+      mimic_joints_.push_back(mimic_joint);
+    }
+  }
+
   const auto get_hardware_parameter = [this](const std::string& parameter_name, const std::string& default_value) {
     if (auto it = info_.hardware_parameters.find(parameter_name); it != info_.hardware_parameters.end())
     {
@@ -168,6 +196,17 @@ hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/,
     joint_state.velocity.push_back(joint_commands_[1][i]);
     joint_state.effort.push_back(joint_commands_[3][i]);
   }
+
+  for (const auto& mimic_joint : mimic_joints_)
+  {
+    joint_state.position[mimic_joint.joint_index] =
+        mimic_joint.multiplier * joint_state.position[mimic_joint.mimicked_joint_index];
+    joint_state.velocity[mimic_joint.joint_index] =
+        mimic_joint.multiplier * joint_state.velocity[mimic_joint.mimicked_joint_index];
+    joint_state.effort[mimic_joint.joint_index] =
+        mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
+  }
+
   isaac_joint_commands_publisher_->publish(joint_state);
 
   return hardware_interface::return_type::OK;
