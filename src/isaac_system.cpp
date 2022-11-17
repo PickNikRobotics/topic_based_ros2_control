@@ -215,18 +215,18 @@ hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/,
     joint_state.name.push_back(info_.joints[i].name);
     joint_state.header.stamp = node_->now();
     joint_state.position.push_back(joint_commands_[0][i]);
-    joint_state.velocity.push_back(joint_commands_[1][i]);
-    joint_state.effort.push_back(joint_commands_[3][i]);
+    /* joint_state.velocity.push_back(joint_commands_[1][i]); */
+    /* joint_state.effort.push_back(joint_commands_[3][i]); */
   }
 
   for (const auto& mimic_joint : mimic_joints_)
   {
     joint_state.position[mimic_joint.joint_index] =
         mimic_joint.multiplier * joint_state.position[mimic_joint.mimicked_joint_index];
-    joint_state.velocity[mimic_joint.joint_index] =
-        mimic_joint.multiplier * joint_state.velocity[mimic_joint.mimicked_joint_index];
-    joint_state.effort[mimic_joint.joint_index] =
-        mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
+    /* joint_state.velocity[mimic_joint.joint_index] = */
+    /*     mimic_joint.multiplier * joint_state.velocity[mimic_joint.mimicked_joint_index]; */
+    /* joint_state.effort[mimic_joint.joint_index] = */
+    /*     mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index]; */
   }
 
   // To avoid spamming Isaac's joint command topic we check the difference between the last sent joint commands and the
