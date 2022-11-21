@@ -119,7 +119,6 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info
   // Add random ID to prevent warnings about multiple publishers within the same node
   rclcpp::NodeOptions options;
   options.arguments({ "--ros-args", "-r", "__node:=isaac_ros2_control_" + info_.name });
-  auto node = rclcpp::Node::make_shared("_", options);
 
   node_ = rclcpp::Node::make_shared("_", options);
   isaac_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
