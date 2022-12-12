@@ -65,3 +65,14 @@ If your robot description support mock_components you only need to change `<plug
             </joint>
         </ros2_control>
 ```
+
+## Isaac Sim
+
+Running Isaac with ROS2 requires setting the RMW implementation to fastdds ([see](https://forums.developer.nvidia.com/t/issues-running-ros2-humble-with-isaac-2022-1-1/229173)) with the following config file [rtps_udp_profile.xml](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docker/middleware_profiles/rtps_udp_profile.xml).
+
+You need to export the following environment variables
+
+```bash
+export FASTRTPS_DEFAULT_PROFILES_FILE=path-to-rtps_udp_profile.xml
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
