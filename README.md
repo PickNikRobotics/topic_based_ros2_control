@@ -7,6 +7,8 @@ Description: This is a ROS 2 package for integrating the ros2_control with the [
 
 [![Build Status](https://github.com/PickNikRobotics/isaac_ros2_control/actions/workflows/build_and_test.yaml/badge.svg)](https://github.com/PickNikRobotics/isaac_ros2_control/actions/workflows/build_and_test.yaml)
 
+https://user-images.githubusercontent.com/16278108/207109459-08f46089-f6bb-4ec2-9cf7-88b0bbc852cb.mp4
+
 ## Documentation
 
 - [Installation](doc/installation.md)
