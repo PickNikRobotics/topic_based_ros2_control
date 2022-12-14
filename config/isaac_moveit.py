@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2020-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
@@ -22,7 +23,14 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # and creation of ROS components
 simulation_app = SimulationApp(CONFIG)
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
+from omni.isaac.core.utils import (
+    viewports,
+    stage,
+    extensions,
+    prims,
+    rotations,
+    nucleus,
+)
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf
 
@@ -44,7 +52,9 @@ if assets_root_path is None:
 viewports.set_camera_view(eye=np.array([1.2, 1.2, 0.8]), target=np.array([0, 0, 0.5]))
 
 # Loading the simple_room environment
-stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
+stage.add_reference_to_stage(
+    assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH
+)
 
 # Loading the franka robot USD
 prims.create_prim(
@@ -67,24 +77,48 @@ try:
                 ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                 ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                 ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
-                ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
-                ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
+                (
+                    "SubscribeJointState",
+                    "omni.isaac.ros2_bridge.ROS2SubscribeJointState",
+                ),
+                (
+                    "ArticulationController",
+                    "omni.isaac.core_nodes.IsaacArticulationController",
+                ),
                 ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [
                 ("OnImpulseEvent.outputs:execOut", "PublishJointState.inputs:execIn"),
                 ("OnImpulseEvent.outputs:execOut", "SubscribeJointState.inputs:execIn"),
                 ("OnImpulseEvent.outputs:execOut", "PublishClock.inputs:execIn"),
-                ("OnImpulseEvent.outputs:execOut", "ArticulationController.inputs:execIn"),
+                (
+                    "OnImpulseEvent.outputs:execOut",
+                    "ArticulationController.inputs:execIn",
+                ),
                 ("Context.outputs:context", "PublishJointState.inputs:context"),
                 ("Context.outputs:context", "SubscribeJointState.inputs:context"),
                 ("Context.outputs:context", "PublishClock.inputs:context"),
-                ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
+                (
+                    "ReadSimTime.outputs:simulationTime",
+                    "PublishJointState.inputs:timeStamp",
+                ),
                 ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
-                ("SubscribeJointState.outputs:jointNames", "ArticulationController.inputs:jointNames"),
-                ("SubscribeJointState.outputs:positionCommand", "ArticulationController.inputs:positionCommand"),
-                ("SubscribeJointState.outputs:velocityCommand", "ArticulationController.inputs:velocityCommand"),
-                ("SubscribeJointState.outputs:effortCommand", "ArticulationController.inputs:effortCommand"),
+                (
+                    "SubscribeJointState.outputs:jointNames",
+                    "ArticulationController.inputs:jointNames",
+                ),
+                (
+                    "SubscribeJointState.outputs:positionCommand",
+                    "ArticulationController.inputs:positionCommand",
+                ),
+                (
+                    "SubscribeJointState.outputs:velocityCommand",
+                    "ArticulationController.inputs:velocityCommand",
+                ),
+                (
+                    "SubscribeJointState.outputs:effortCommand",
+                    "ArticulationController.inputs:effortCommand",
+                ),
             ],
             og.Controller.Keys.SET_VALUES: [
                 # Setting the /Franka target prim to Articulation Controller node
@@ -100,7 +134,9 @@ except Exception as e:
 
 
 # Setting the /Franka target prim to Publish JointState node
-set_target_prims(primPath="/ActionGraph/PublishJointState", targetPrimPaths=[FRANKA_STAGE_PATH])
+set_target_prims(
+    primPath="/ActionGraph/PublishJointState", targetPrimPaths=[FRANKA_STAGE_PATH]
+)
 
 simulation_app.update()
 
@@ -115,7 +151,9 @@ while simulation_app.is_running():
     simulation_context.step(render=True)
 
     # Tick the Publish/Subscribe JointState, Publish TF and Publish Clock nodes each frame
-    og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
+    og.Controller.set(
+        og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True
+    )
 
 simulation_context.stop()
 simulation_app.close()
