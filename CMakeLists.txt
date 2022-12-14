@@ -59,7 +59,9 @@ if(BUILD_TESTING)
   # to this test
   set(ament_cmake_cpplint_FOUND TRUE)
   set(ament_cmake_uncrustify_FOUND TRUE)
+  set(AMENT_LINT_AUTO_EXCLUDE ament_cmake_copyright)
   ament_lint_auto_find_test_dependencies()
+  ament_copyright(EXCLUDE config/isaac_moveit.py)
 
   # GTests
   ament_add_gtest(isaac_system_test test/isaac_system_test.cpp)
