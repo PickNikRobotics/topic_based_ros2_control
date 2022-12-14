@@ -1,5 +1,23 @@
 # User Guide
 
+## Isaac Sim
+
+Running Isaac with ROS2 requires setting the RMW implementation to fastdds ([see](https://forums.developer.nvidia.com/t/issues-running-ros2-humble-with-isaac-2022-1-1/229173)) with the following config file [rtps_udp_profile.xml](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docker/middleware_profiles/rtps_udp_profile.xml).
+
+You need to export the following environment variables
+
+```bash
+export FASTRTPS_DEFAULT_PROFILES_FILE=path-to-rtps_udp_profile.xml
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
+### MoveIt integration
+
+* First we need to launch `omniverse-launcher-linux.AppImage` to start the `nucleus` server to be able to access Isaac Sim assets.
+
+* Then we launch the demo by running `~/.local/share/ov/pkg/isaac_sim-2022.1.1/python.sh PATH-TO-CONFIG-DIR/isaac_moveit.py` and wait until isaac is fully loaded.
+
+* Finally launch move_group with IsaacSystem `ros2 launch moveit_resources_panda_moveit_config demo.launch.py ros2_control_hardware_type:=isaac` and add MotionPlanning rviz plugin.
+
 ## Isaac System
 The isaac system implements `hardware_interface::SystemInterface` supporting command and state interfaces.
 
@@ -64,15 +82,4 @@ If your robot description support mock_components you only need to change `<plug
                 <state_interface name="velocity"/>
             </joint>
         </ros2_control>
-```
-
-## Isaac Sim
-
-Running Isaac with ROS2 requires setting the RMW implementation to fastdds ([see](https://forums.developer.nvidia.com/t/issues-running-ros2-humble-with-isaac-2022-1-1/229173)) with the following config file [rtps_udp_profile.xml](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docker/middleware_profiles/rtps_udp_profile.xml).
-
-You need to export the following environment variables
-
-```bash
-export FASTRTPS_DEFAULT_PROFILES_FILE=path-to-rtps_udp_profile.xml
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 ```
