@@ -4,7 +4,7 @@
 
 To make sure you have the latest repos:
 
-      cd $COLCON_WS/src/isaac_ros2_control
+      cd $COLCON_WS/src/topic_based_ros2_control
       git checkout main
       git pull origin main
       cd $COLCON_WS/src
@@ -28,7 +28,7 @@ pre-commit install
 
 ## Testing and Linting
 
-To test the packages in isaac_ros2_control, use the following command with [colcon](https://colcon.readthedocs.io/en/released/).
+To test the packages in topic_based_ros2_control, use the following command with [colcon](https://colcon.readthedocs.io/en/released/).
 
     export TEST_PACKAGES="PROJECT_PACKAGE_NAMES"
     colcon build --packages-up-to ${TEST_PACKAGES}

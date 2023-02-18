@@ -37,15 +37,15 @@
 #include <rclcpp_lifecycle/state.hpp>
 #include <ros2_control_test_assets/descriptions.hpp>
 
-TEST(TestIsaacSystem, load_isaac_system_2dof)
+TEST(TestTopicBasedSystem, load_topic_based_system_2dof)
 {
-  const std::string hardware_system_2dof_standard_interfaces_with_isaac =
+  const std::string hardware_system_2dof_standard_interfaces_with_topic_based =
       R"(
-  <ros2_control name="IsaacSystem2dof" type="system">
+  <ros2_control name="TopicBasedSystem2dof" type="system">
     <hardware>
-      <plugin>isaac_ros2_control/IsaacSystem</plugin>
-      <param name="joint_commands_topic">/isaac_joint_commands</param>
-      <param name="joint_states_topic">/isaac_custom_joint_states</param>
+      <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
+      <param name="joint_commands_topic">/topic_based_joint_commands</param>
+      <param name="joint_states_topic">/topic_based_custom_joint_states</param>
     </hardware>
     <joint name="joint1">
       <command_interface name="position"/>
@@ -61,7 +61,7 @@ TEST(TestIsaacSystem, load_isaac_system_2dof)
     </joint>
   </ros2_control>
 )";
-  auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_standard_interfaces_with_isaac +
+  auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_standard_interfaces_with_topic_based +
               ros2_control_test_assets::urdf_tail;
   ASSERT_NO_THROW(hardware_interface::ResourceManager rm(urdf, true, false));
 }

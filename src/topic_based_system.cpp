@@ -35,15 +35,15 @@
 #include <string>
 #include <vector>
 
-#include <isaac_ros2_control/isaac_system.hpp>
 #include <rclcpp/executors.hpp>
+#include <topic_based_ros2_control/topic_based_system.hpp>
 
 static constexpr auto EPSILON = 1e-5;
 
-namespace isaac_ros2_control
+namespace topic_based_ros2_control
 {
 
-CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info)
+CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo& info)
 {
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
   {
@@ -118,19 +118,19 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo& info
 
   // Add random ID to prevent warnings about multiple publishers within the same node
   rclcpp::NodeOptions options;
-  options.arguments({ "--ros-args", "-r", "__node:=isaac_ros2_control_" + info_.name });
+  options.arguments({ "--ros-args", "-r", "__node:=topic_based_ros2_control_" + info_.name });
 
   node_ = rclcpp::Node::make_shared("_", options);
-  isaac_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
-      get_hardware_parameter("joint_commands_topic", "/joint_command"), rclcpp::QoS(1));
-  isaac_joint_states_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
-      get_hardware_parameter("joint_states_topic", "/isaac_joint_states"), rclcpp::SensorDataQoS(),
+  topic_based_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
+      get_hardware_parameter("joint_commands_topic", "/robot_joint_commands"), rclcpp::QoS(1));
+  topic_based_joint_states_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
+      get_hardware_parameter("joint_states_topic", "/robot_joint_states"), rclcpp::SensorDataQoS(),
       [this](const sensor_msgs::msg::JointState::SharedPtr joint_state) { latest_joint_state_ = *joint_state; });
 
   return CallbackReturn::SUCCESS;
 }
 
-std::vector<hardware_interface::StateInterface> IsaacSystem::export_state_interfaces()
+std::vector<hardware_interface::StateInterface> TopicBasedSystem::export_state_interfaces()
 {
   std::vector<hardware_interface::StateInterface> state_interfaces;
 
@@ -151,7 +151,7 @@ std::vector<hardware_interface::StateInterface> IsaacSystem::export_state_interf
   return state_interfaces;
 }
 
-std::vector<hardware_interface::CommandInterface> IsaacSystem::export_command_interfaces()
+std::vector<hardware_interface::CommandInterface> TopicBasedSystem::export_command_interfaces()
 {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
 
@@ -171,7 +171,7 @@ std::vector<hardware_interface::CommandInterface> IsaacSystem::export_command_in
   return command_interfaces;
 }
 
-hardware_interface::return_type IsaacSystem::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
+hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
   rclcpp::spin_some(node_);
   for (std::size_t i = 0; i < latest_joint_state_.name.size(); ++i)
@@ -184,8 +184,14 @@ hardware_interface::return_type IsaacSystem::read(const rclcpp::Time& /*time*/, 
     {
       auto j = static_cast<std::size_t>(std::distance(joints.begin(), it));
       joint_states_[0][j] = latest_joint_state_.position[i];
-      joint_states_[1][j] = latest_joint_state_.velocity[i];
-      joint_states_[3][j] = latest_joint_state_.effort[i];
+      if (!latest_joint_state_.velocity.empty())
+      {
+        joint_states_[1][j] = latest_joint_state_.velocity[i];
+      }
+      if (!latest_joint_state_.effort.empty())
+      {
+        joint_states_[3][j] = latest_joint_state_.effort[i];
+      }
     }
   }
 
@@ -193,8 +199,9 @@ hardware_interface::return_type IsaacSystem::read(const rclcpp::Time& /*time*/, 
 }
 
 template <typename HandleType>
-bool IsaacSystem::getInterface(const std::string& name, const std::string& interface_name, const size_t vector_index,
-                               std::vector<std::vector<double>>& values, std::vector<HandleType>& interfaces)
+bool TopicBasedSystem::getInterface(const std::string& name, const std::string& interface_name,
+                                    const size_t vector_index, std::vector<std::vector<double>>& values,
+                                    std::vector<HandleType>& interfaces)
 {
   auto it = std::find(standard_interfaces_.begin(), standard_interfaces_.end(), interface_name);
   if (it != standard_interfaces_.end())
@@ -206,7 +213,7 @@ bool IsaacSystem::getInterface(const std::string& name, const std::string& inter
   return false;
 }
 
-hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
+hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
   sensor_msgs::msg::JointState joint_state;
   for (std::size_t i = 0; i < info_.joints.size(); ++i)
@@ -228,8 +235,8 @@ hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/,
         mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
   }
 
-  // To avoid spamming Isaac's joint command topic we check the difference between the last sent joint commands and the
-  // current joint commands, if it's smaller than EPSILON we don't publish it.
+  // To avoid spamming TopicBased's joint command topic we check the difference between the last sent joint commands and
+  // the current joint commands, if it's smaller than EPSILON we don't publish it.
   if (std::transform_reduce(
           last_position_command_.cbegin(), last_position_command_.cend(), joint_state.position.cbegin(), 0.0,
           [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{}) <= EPSILON)
@@ -237,12 +244,12 @@ hardware_interface::return_type IsaacSystem::write(const rclcpp::Time& /*time*/,
     return hardware_interface::return_type::OK;
   }
 
-  isaac_joint_commands_publisher_->publish(joint_state);
+  topic_based_joint_commands_publisher_->publish(joint_state);
   last_position_command_ = joint_state.position;
 
   return hardware_interface::return_type::OK;
 }
-}  // end namespace isaac_ros2_control
+}  // end namespace topic_based_ros2_control
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(isaac_ros2_control::IsaacSystem, hardware_interface::SystemInterface)
+PLUGINLIB_EXPORT_CLASS(topic_based_ros2_control::TopicBasedSystem, hardware_interface::SystemInterface)

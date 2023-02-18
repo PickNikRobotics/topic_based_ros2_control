@@ -1,34 +1,21 @@
 # User Guide
 
-## Isaac Sim
+## Topic Based System
 
-Running Isaac with ROS2 requires setting the RMW implementation to fastdds ([see](https://forums.developer.nvidia.com/t/issues-running-ros2-humble-with-isaac-2022-1-1/229173)) with the following config file [rtps_udp_profile.xml](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docker/middleware_profiles/rtps_udp_profile.xml).
+The topic_based system implements `hardware_interface::SystemInterface` supporting command and state interfaces through ROS topic communication layer.
 
-You need to export the following environment variables
+### MoveIt and Isaac sim integration
 
-```bash
-export FASTRTPS_DEFAULT_PROFILES_FILE=path-to-rtps_udp_profile.xml
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-```
-### MoveIt integration
-
-* First we need to launch `omniverse-launcher-linux.AppImage` to start the `nucleus` server to be able to access Isaac Sim assets.
-
-* Then we launch the demo by running `~/.local/share/ov/pkg/isaac_sim-2022.1.1/python.sh PATH-TO-CONFIG-DIR/isaac_moveit.py` and wait until isaac is fully loaded.
-
-* Finally launch move_group with IsaacSystem `ros2 launch moveit_resources_panda_moveit_config demo.launch.py ros2_control_hardware_type:=isaac` and add MotionPlanning rviz plugin.
-
-## Isaac System
-The isaac system implements `hardware_interface::SystemInterface` supporting command and state interfaces.
+Follow the instructions in the [MoveIt and Isaac sim integration](https://moveit.picknik.ai/humble/doc/how_to_guides/how_to_guides.html) guide to setup your robot for MoveIt and Isaac sim integration.
 
 ### ros2_control urdf tag
 
-The isaac system interface has a few `ros2_control` urdf tags to customize its behavior.
+The topic_based system interface has a few `ros2_control` urdf tags to customize its behavior.
 
 #### Parameters
 
-* joint_commands_topic: (default: "/joint_command"). Example: `<param name="joint_commands_topic">/isaac_joint_commands</param>`.
-* joint_states_topic: (default: "/isaac_joint_states"). Example: `<param name="joint_states_topic">/isaac_custom_joint_states</param>`.
+* joint_commands_topic: (default: "/robot_joint_command"). Example: `<param name="joint_commands_topic">/my_topic_joint_commands</param>`.
+* joint_states_topic: (default: "/robot_joint_states"). Example: `<param name="joint_states_topic">/my_topic_joint_states</param>`.
 
 #### Per-joint Parameters
 
@@ -37,14 +24,14 @@ The isaac system interface has a few `ros2_control` urdf tags to customize its b
 
 ### Modifying the urdf `ros2_control` tag for new robots
 
-If your robot description support mock_components you only need to change `<plugin>mock_components/GenericSystem</plugin>` to `<plugin>isaac_ros2_control/IsaacSystem</plugin>`, make sure to add the `joint_commands_topic` and `joint_states_topic` to point to the correct Isaac sim topics.
+If your robot description support mock_components you only need to change `<plugin>mock_components/GenericSystem</plugin>` to `<plugin>topic_based_ros2_control/TopicBasedSystem</plugin>`, make sure to add the `joint_commands_topic` and `joint_states_topic` to point to the correct topics.
 
 ```xml
         <ros2_control name="name" type="system">
             <hardware>
-                <plugin>isaac_ros2_control/IsaacSystem</plugin>
-                <param name="joint_commands_topic">/isaac_joint_commands</param>
-                <param name="joint_states_topic">/isaac_joint_states</param>
+                <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
+                <param name="joint_commands_topic">/topic_based_joint_commands</param>
+                <param name="joint_states_topic">/topic_based_joint_states</param>
             </hardware>
             <joint name="joint_1">
                 <command_interface name="position"/>

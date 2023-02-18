@@ -2,9 +2,9 @@
 
 ## Binaries
 
-`isaac_ros2_control` is currently only released for ROS2 Humble and Rolling. For other ROS2 releases, you may need to build it from source.
+`topic_based_ros2_control` is currently only released for ROS2 Humble and Rolling. For other ROS2 releases, you may need to build it from source.
 
-        sudo apt-get install ros-$ROS_DISTRO-isaac-ros2-control
+        sudo apt-get install ros-$ROS_DISTRO-topic-based-ros2-control
 
 ## Build from Source
 
@@ -28,12 +28,12 @@ These instructions assume you are running on Ubuntu 22.04:
 4. Get the repo and install any dependencies:
 
         cd $COLCON_WS/src
-        git clone git@github.com:PickNikRobotics/isaac_ros2_control.git
+        git clone git@github.com:PickNikRobotics/topic_based_ros2_control.git
 
         rosdep install --ignore-src --from-paths . -y
 
         # Pick a ROS_DOMAIN_ID that doesn't clash with others
-        # This one need to be the same value as Isaac's domain id (0 by default)
+        # This one need to be the same value as TopicBased's domain id (0 by default)
         echo 'export ROS_DOMAIN_ID='<YOUR-NUMBER> >> ~/.bashrc
 
 5. Configure and build the workspace:

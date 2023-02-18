@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <package format="3">
-    <name>isaac_ros2_control</name>
+    <name>topic_based_ros2_control</name>
     <version>0.0.1</version>
-    <description>ros2 control hardware interface for isaac sim</description>
+    <description>ros2 control hardware interface for topic_based sim</description>
 
     <maintainer email="jafar@picknik.ai">Jafar</maintainer>
     <author email="jafar@picknik.ai">Jafar</author>
 
     <license>BSD</license>
 
-    <url type="website">https://github.com/PickNikRobotics/isaac_ros2_control</url>
-    <url type="bugtracker">https://github.com/PickNikRobotics/isaac_ros2_control/issues</url>
-    <url type="repository">https://github.com/PickNikRobotics/isaac_ros2_control/</url>
+    <url type="website">https://github.com/PickNikRobotics/topic_based_ros2_control</url>
+    <url type="bugtracker">https://github.com/PickNikRobotics/topic_based_ros2_control/issues</url>
+    <url type="repository">https://github.com/PickNikRobotics/topic_based_ros2_control/</url>
 
     <buildtool_depend>ament_cmake</buildtool_depend>s
 

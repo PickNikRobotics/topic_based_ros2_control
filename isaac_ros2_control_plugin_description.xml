@@ -1,9 +1,0 @@
-<library path="isaac_ros2_control">
-
-<class name="isaac_ros2_control/IsaacSystem" type="isaac_ros2_control::IsaacSystem" base_class_type="hardware_interface::SystemInterface">
-    <description>
-        ros2_control hardware interface for NVidia Isaac sim.
-    </description>
-  </class>
-
-</library>
