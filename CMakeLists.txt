@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(isaac_ros2_control CXX)
+project(topic_based_ros2_control CXX)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wshadow
@@ -26,7 +26,7 @@ endforeach()
 # Declare a C++ library
 add_library(
   ${PROJECT_NAME}
-  src/isaac_system.cpp
+  src/topic_based_system.cpp
 )
 ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_include_directories(${PROJECT_NAME}
@@ -59,18 +59,16 @@ if(BUILD_TESTING)
   # to this test
   set(ament_cmake_cpplint_FOUND TRUE)
   set(ament_cmake_uncrustify_FOUND TRUE)
-  set(AMENT_LINT_AUTO_EXCLUDE ament_cmake_copyright)
   ament_lint_auto_find_test_dependencies()
-  ament_copyright(EXCLUDE config/isaac_moveit.py)
 
   # GTests
-  ament_add_gtest(isaac_system_test test/isaac_system_test.cpp)
-  target_link_libraries(isaac_system_test
+  ament_add_gtest(topic_based_system_test test/topic_based_system_test.cpp)
+  target_link_libraries(topic_based_system_test
     ${PROJECT_NAME})
-  ament_target_dependencies(isaac_system_test ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  ament_target_dependencies(topic_based_system_test ${THIS_PACKAGE_INCLUDE_DEPENDS})
 endif()
 
-pluginlib_export_plugin_description_file(hardware_interface isaac_ros2_control_plugin_description.xml)
+pluginlib_export_plugin_description_file(hardware_interface topic_based_ros2_control_plugin_description.xml)
 ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()

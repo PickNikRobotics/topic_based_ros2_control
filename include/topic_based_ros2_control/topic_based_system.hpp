@@ -27,7 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /* Author: Jafar Abdi
-   Desc: ros2_control system interface for isaac sim
+   Desc: ros2_control system interface for topic based sim
 */
 
 #pragma once
@@ -48,11 +48,11 @@
 
 #include <sensor_msgs/msg/joint_state.hpp>
 
-namespace isaac_ros2_control
+namespace topic_based_ros2_control
 {
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-class IsaacSystem : public hardware_interface::SystemInterface
+class TopicBasedSystem : public hardware_interface::SystemInterface
 {
 public:
   CallbackReturn on_init(const hardware_interface::HardwareInfo& info) override;
@@ -66,8 +66,8 @@ public:
   hardware_interface::return_type write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) override;
 
 private:
-  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr isaac_joint_states_subscriber_;
-  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr isaac_joint_commands_publisher_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr topic_based_joint_states_subscriber_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr topic_based_joint_commands_publisher_;
   rclcpp::Node::SharedPtr node_;
   sensor_msgs::msg::JointState latest_joint_state_;
 
@@ -95,4 +95,4 @@ private:
                     std::vector<std::vector<double>>& values, std::vector<HandleType>& interfaces);
 };
 
-}  // namespace isaac_ros2_control
+}  // namespace topic_based_ros2_control
