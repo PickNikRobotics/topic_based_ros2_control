@@ -10,6 +10,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    # Run every morning to detect flakiness and broken dependencies
+    - cron: '43 1 * * *'
 
 jobs:
   industrial_ci:
