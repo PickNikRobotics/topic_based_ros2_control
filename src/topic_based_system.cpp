@@ -60,7 +60,6 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
     joint_commands_[i].resize(info_.joints.size(), 0.0);
     joint_states_[i].resize(info_.joints.size(), 0.0);
   }
-  last_position_command_.resize(info_.joints.size(), 0.0);
 
   // Initial command values
   for (auto i = 0u; i < info_.joints.size(); i++)
@@ -263,7 +262,6 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
   }
 
   topic_based_joint_commands_publisher_->publish(joint_state);
-  last_position_command_ = joint_state.position;
 
   return hardware_interface::return_type::OK;
 }
