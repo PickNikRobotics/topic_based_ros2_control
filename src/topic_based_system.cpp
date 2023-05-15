@@ -41,6 +41,10 @@
 namespace topic_based_ros2_control
 {
 
+static constexpr std::size_t POSITION_INTERFACE_INDEX = 0;
+static constexpr std::size_t VELOCITY_INTERFACE_INDEX = 1;
+static constexpr std::size_t EFFORT_INTERFACE_INDEX = 2;
+
 CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo& info)
 {
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
@@ -187,14 +191,14 @@ hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*tim
     if (it != joints.end())
     {
       auto j = static_cast<std::size_t>(std::distance(joints.begin(), it));
-      joint_states_[0][j] = latest_joint_state_.position[i];
+      joint_states_[POSITION_INTERFACE_INDEX][j] = latest_joint_state_.position[i];
       if (!latest_joint_state_.velocity.empty())
       {
-        joint_states_[1][j] = latest_joint_state_.velocity[i];
+        joint_states_[VELOCITY_INTERFACE_INDEX][j] = latest_joint_state_.velocity[i];
       }
       if (!latest_joint_state_.effort.empty())
       {
-        joint_states_[3][j] = latest_joint_state_.effort[i];
+        joint_states_[EFFORT_INTERFACE_INDEX][j] = latest_joint_state_.effort[i];
       }
     }
   }
@@ -230,7 +234,8 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
   // To avoid spamming TopicBased's joint command topic we check the difference between the joint states and
   // the current joint commands, if it's smaller than a threshold we don't publish it.
   const auto diff = std::transform_reduce(
-      joint_states_[0].cbegin(), joint_states_[0].cend(), joint_commands_[0].cbegin(), 0.0,
+      joint_states_[POSITION_INTERFACE_INDEX].cbegin(), joint_states_[POSITION_INTERFACE_INDEX].cend(),
+      joint_commands_[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
       [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
   if (diff <= trigger_joint_command_threshold_)
   {
@@ -242,9 +247,9 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
   {
     joint_state.name.push_back(info_.joints[i].name);
     joint_state.header.stamp = node_->now();
-    joint_state.position.push_back(joint_commands_[0][i]);
-    joint_state.velocity.push_back(joint_commands_[1][i]);
-    joint_state.effort.push_back(joint_commands_[3][i]);
+    joint_state.position.push_back(joint_commands_[POSITION_INTERFACE_INDEX][i]);
+    joint_state.velocity.push_back(joint_commands_[VELOCITY_INTERFACE_INDEX][i]);
+    joint_state.effort.push_back(joint_commands_[EFFORT_INTERFACE_INDEX][i]);
   }
 
   for (const auto& mimic_joint : mimic_joints_)
