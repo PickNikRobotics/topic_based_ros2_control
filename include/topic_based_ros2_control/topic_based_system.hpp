@@ -90,6 +90,10 @@ private:
   std::vector<double> last_position_command_;
   std::vector<std::vector<double>> joint_states_;
 
+  // If the difference between the current joint state and joint command is less than this value,
+  // the joint command will not be published.
+  double trigger_joint_command_threshold_ = 1e-5;
+
   template <typename HandleType>
   bool getInterface(const std::string& name, const std::string& interface_name, const size_t vector_index,
                     std::vector<std::vector<double>>& values, std::vector<HandleType>& interfaces);

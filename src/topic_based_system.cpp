@@ -38,8 +38,6 @@
 #include <rclcpp/executors.hpp>
 #include <topic_based_ros2_control/topic_based_system.hpp>
 
-static constexpr auto EPSILON = 1e-5;
-
 namespace topic_based_ros2_control
 {
 
@@ -121,6 +119,12 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   options.arguments({ "--ros-args", "-r", "__node:=topic_based_ros2_control_" + info_.name });
 
   node_ = rclcpp::Node::make_shared("_", options);
+
+  if (auto it = info_.hardware_parameters.find("trigger_joint_command_threshold"); it != info_.hardware_parameters.end())
+  {
+    trigger_joint_command_threshold_ = std::stod(it->second);
+  }
+
   topic_based_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
       get_hardware_parameter("joint_commands_topic", "/robot_joint_commands"), rclcpp::QoS(1));
   topic_based_joint_states_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
@@ -215,6 +219,16 @@ bool TopicBasedSystem::getInterface(const std::string& name, const std::string& 
 
 hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
+  // To avoid spamming TopicBased's joint command topic we check the difference between the joint states and
+  // the current joint commands, if it's smaller than a threshold we don't publish it.
+  const auto diff = std::transform_reduce(
+      joint_states_[0].cbegin(), joint_states_[0].cend(), joint_commands_[0].cbegin(), 0.0,
+      [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
+  if (diff <= trigger_joint_command_threshold_)
+  {
+    return hardware_interface::return_type::OK;
+  }
+
   sensor_msgs::msg::JointState joint_state;
   for (std::size_t i = 0; i < info_.joints.size(); ++i)
   {
@@ -233,15 +247,6 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
         mimic_joint.multiplier * joint_state.velocity[mimic_joint.mimicked_joint_index];
     joint_state.effort[mimic_joint.joint_index] =
         mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
-  }
-
-  // To avoid spamming TopicBased's joint command topic we check the difference between the last sent joint commands and
-  // the current joint commands, if it's smaller than EPSILON we don't publish it.
-  if (std::transform_reduce(
-          last_position_command_.cbegin(), last_position_command_.cend(), joint_state.position.cbegin(), 0.0,
-          [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{}) <= EPSILON)
-  {
-    return hardware_interface::return_type::OK;
   }
 
   topic_based_joint_commands_publisher_->publish(joint_state);
