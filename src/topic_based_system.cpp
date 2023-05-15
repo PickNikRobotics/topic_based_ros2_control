@@ -199,6 +199,14 @@ hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*tim
     }
   }
 
+  for (const auto& mimic_joint : mimic_joints_)
+  {
+    for (auto& joint_state : joint_states_)
+    {
+      joint_state[mimic_joint.joint_index] = mimic_joint.multiplier * joint_state[mimic_joint.mimicked_joint_index];
+    }
+  }
+
   return hardware_interface::return_type::OK;
 }
 
