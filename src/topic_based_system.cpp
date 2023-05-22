@@ -43,7 +43,7 @@ namespace topic_based_ros2_control
 
 static constexpr std::size_t POSITION_INTERFACE_INDEX = 0;
 static constexpr std::size_t VELOCITY_INTERFACE_INDEX = 1;
-static constexpr std::size_t EFFORT_INTERFACE_INDEX = 2;
+static constexpr std::size_t EFFORT_INTERFACE_INDEX = 3;
 
 CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo& info)
 {
