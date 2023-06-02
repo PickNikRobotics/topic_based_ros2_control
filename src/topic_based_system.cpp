@@ -38,10 +38,13 @@
 #include <rclcpp/executors.hpp>
 #include <topic_based_ros2_control/topic_based_system.hpp>
 
-static constexpr auto EPSILON = 1e-5;
-
 namespace topic_based_ros2_control
 {
+
+static constexpr std::size_t POSITION_INTERFACE_INDEX = 0;
+static constexpr std::size_t VELOCITY_INTERFACE_INDEX = 1;
+// JointState doesn't contain an acceleration field, so right now it's not used
+static constexpr std::size_t EFFORT_INTERFACE_INDEX = 3;
 
 CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo& info)
 {
@@ -58,7 +61,6 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
     joint_commands_[i].resize(info_.joints.size(), 0.0);
     joint_states_[i].resize(info_.joints.size(), 0.0);
   }
-  last_position_command_.resize(info_.joints.size(), 0.0);
 
   // Initial command values
   for (auto i = 0u; i < info_.joints.size(); i++)
@@ -121,6 +123,12 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   options.arguments({ "--ros-args", "-r", "__node:=topic_based_ros2_control_" + info_.name });
 
   node_ = rclcpp::Node::make_shared("_", options);
+
+  if (auto it = info_.hardware_parameters.find("trigger_joint_command_threshold"); it != info_.hardware_parameters.end())
+  {
+    trigger_joint_command_threshold_ = std::stod(it->second);
+  }
+
   topic_based_joint_commands_publisher_ = node_->create_publisher<sensor_msgs::msg::JointState>(
       get_hardware_parameter("joint_commands_topic", "/robot_joint_commands"), rclcpp::QoS(1));
   topic_based_joint_states_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
@@ -183,15 +191,23 @@ hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*tim
     if (it != joints.end())
     {
       auto j = static_cast<std::size_t>(std::distance(joints.begin(), it));
-      joint_states_[0][j] = latest_joint_state_.position[i];
+      joint_states_[POSITION_INTERFACE_INDEX][j] = latest_joint_state_.position[i];
       if (!latest_joint_state_.velocity.empty())
       {
-        joint_states_[1][j] = latest_joint_state_.velocity[i];
+        joint_states_[VELOCITY_INTERFACE_INDEX][j] = latest_joint_state_.velocity[i];
       }
       if (!latest_joint_state_.effort.empty())
       {
-        joint_states_[3][j] = latest_joint_state_.effort[i];
+        joint_states_[EFFORT_INTERFACE_INDEX][j] = latest_joint_state_.effort[i];
       }
+    }
+  }
+
+  for (const auto& mimic_joint : mimic_joints_)
+  {
+    for (auto& joint_state : joint_states_)
+    {
+      joint_state[mimic_joint.joint_index] = mimic_joint.multiplier * joint_state[mimic_joint.mimicked_joint_index];
     }
   }
 
@@ -215,14 +231,25 @@ bool TopicBasedSystem::getInterface(const std::string& name, const std::string& 
 
 hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
+  // To avoid spamming TopicBased's joint command topic we check the difference between the joint states and
+  // the current joint commands, if it's smaller than a threshold we don't publish it.
+  const auto diff = std::transform_reduce(
+      joint_states_[POSITION_INTERFACE_INDEX].cbegin(), joint_states_[POSITION_INTERFACE_INDEX].cend(),
+      joint_commands_[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
+      [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
+  if (diff <= trigger_joint_command_threshold_)
+  {
+    return hardware_interface::return_type::OK;
+  }
+
   sensor_msgs::msg::JointState joint_state;
   for (std::size_t i = 0; i < info_.joints.size(); ++i)
   {
     joint_state.name.push_back(info_.joints[i].name);
     joint_state.header.stamp = node_->now();
-    joint_state.position.push_back(joint_commands_[0][i]);
-    joint_state.velocity.push_back(joint_commands_[1][i]);
-    joint_state.effort.push_back(joint_commands_[3][i]);
+    joint_state.position.push_back(joint_commands_[POSITION_INTERFACE_INDEX][i]);
+    joint_state.velocity.push_back(joint_commands_[VELOCITY_INTERFACE_INDEX][i]);
+    joint_state.effort.push_back(joint_commands_[EFFORT_INTERFACE_INDEX][i]);
   }
 
   for (const auto& mimic_joint : mimic_joints_)
@@ -235,17 +262,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
         mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
   }
 
-  // To avoid spamming TopicBased's joint command topic we check the difference between the last sent joint commands and
-  // the current joint commands, if it's smaller than EPSILON we don't publish it.
-  if (std::transform_reduce(
-          last_position_command_.cbegin(), last_position_command_.cend(), joint_state.position.cbegin(), 0.0,
-          [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{}) <= EPSILON)
-  {
-    return hardware_interface::return_type::OK;
-  }
-
   topic_based_joint_commands_publisher_->publish(joint_state);
-  last_position_command_ = joint_state.position;
 
   return hardware_interface::return_type::OK;
 }
