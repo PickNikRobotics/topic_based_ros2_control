@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>topic_based_ros2_control</name>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <description>ros2 control hardware interface for topic_based sim</description>
 
     <maintainer email="jafar@picknik.ai">Jafar</maintainer>

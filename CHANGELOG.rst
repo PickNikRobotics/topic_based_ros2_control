@@ -2,8 +2,8 @@
 Changelog for package topic_based_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2023-06-09)
+------------------
 * colcon: fixup missing test dependency (`#9 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/9>`_)
   fixes ros2_control_test_assets .hpp file was not found
   Co-authored-by: Jafar Uruç <jafar.uruc@gmail.com>
