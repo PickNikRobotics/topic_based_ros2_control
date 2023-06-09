@@ -2,6 +2,13 @@
 Changelog for package topic_based_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* colcon: fixup missing test dependency (`#9 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/9>`_)
+  fixes ros2_control_test_assets .hpp file was not found
+  Co-authored-by: Jafar Uruç <jafar.uruc@gmail.com>
+* Contributors: Alex Moriarty
+
 0.1.0 (2023-05-23)
 ------------------
 * Fix joint state for mimic joints & expose epsilon parameter (`#7 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/7>`_)
