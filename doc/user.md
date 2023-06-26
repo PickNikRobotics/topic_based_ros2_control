@@ -17,6 +17,7 @@ The topic_based system interface has a few `ros2_control` urdf tags to customize
 * joint_commands_topic: (default: "/robot_joint_command"). Example: `<param name="joint_commands_topic">/my_topic_joint_commands</param>`.
 * joint_states_topic: (default: "/robot_joint_states"). Example: `<param name="joint_states_topic">/my_topic_joint_states</param>`.
 * trigger_joint_command_threshold: (default: 1e-5). Used to avoid spamming the joint command topic when the difference between the current joint state and the joint command is smaller than this value, set to zero to always send the joint command. Example: `<param name="trigger_joint_command_threshold">0.001</param>`.
+* sum_wrapped_joint_states: (default: "false"). Used to track the total rotation for joint states the values reported on the `joint_commands_topic` wrap from 2*pi to -2*pi when rotating in the positive direction. (Isaac Sim only reports joint states from 2*pi to -2*pi) Example: `<param name="sum_wrapped_joint_states">true</param>`.
 
 #### Per-joint Parameters
 
@@ -33,6 +34,7 @@ If your robot description support mock_components you only need to change `<plug
                 <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
                 <param name="joint_commands_topic">/topic_based_joint_commands</param>
                 <param name="joint_states_topic">/topic_based_joint_states</param>
+                <param name="sum_wrapped_joint_states">true</param>
             </hardware>
             <joint name="joint_1">
                 <command_interface name="position"/>

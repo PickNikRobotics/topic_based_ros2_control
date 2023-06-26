@@ -9,6 +9,7 @@ endif()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
+  angles
   rclcpp
   hardware_interface
   sensor_msgs
