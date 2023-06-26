@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 
+#include <angles/angles.h>
 #include <rclcpp/executors.hpp>
 #include <topic_based_ros2_control/topic_based_system.hpp>
 
@@ -42,22 +43,10 @@ namespace
 {
 /** @brief Sums the total rotation for joint states that wrap from 2*pi to -2*pi
 when rotating in the positive direction */
-void sumRotationFromMinus2PiTo2Pi(const double current_wrapped_rad, const double previous_wrapped_rad,
-                                  double& total_rotation)
+void sumRotationFromMinus2PiTo2Pi(const double current_wrapped_rad, double& total_rotation)
 {
-  double delta = current_wrapped_rad - previous_wrapped_rad;
-
-  // Check for discontinuities due to the jump from 2*pi to -2*pi and correct them
-  if (delta > M_PI)
-  {
-    // The change is large and positive, but it should be small and negative
-    delta -= 4.0 * M_PI;
-  }
-  else if (delta < -M_PI)
-  {
-    // The change is large and negative, but it should be small and positive
-    delta += 4.0 * M_PI;
-  }
+  double delta = 0;
+  angles::shortest_angular_distance_with_large_limits(total_rotation, current_wrapped_rad, 2 * M_PI, -2 * M_PI, delta);
 
   // Add the corrected delta to the total rotation
   total_rotation += delta;
@@ -216,12 +205,6 @@ hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*tim
 {
   rclcpp::spin_some(node_);
 
-  // initialize the previous_joint_state on the first read()
-  if (previous_joint_state_.position.size() != latest_joint_state_.position.size())
-  {
-    previous_joint_state_ = latest_joint_state_;
-  }
-
   for (std::size_t i = 0; i < latest_joint_state_.name.size(); ++i)
   {
     const auto& joints = info_.joints;
@@ -233,8 +216,7 @@ hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*tim
       auto j = static_cast<std::size_t>(std::distance(joints.begin(), it));
       if (sum_wrapped_joint_states_)
       {
-        sumRotationFromMinus2PiTo2Pi(latest_joint_state_.position[i], previous_joint_state_.position[i],
-                                     joint_states_[POSITION_INTERFACE_INDEX][j]);
+        sumRotationFromMinus2PiTo2Pi(latest_joint_state_.position[i], joint_states_[POSITION_INTERFACE_INDEX][j]);
       }
       else
       {
@@ -250,8 +232,6 @@ hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*tim
       }
     }
   }
-  // update the previous_joint_state_
-  previous_joint_state_ = latest_joint_state_;
 
   for (const auto& mimic_joint : mimic_joints_)
   {
