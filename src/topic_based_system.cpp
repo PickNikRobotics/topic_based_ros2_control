@@ -203,7 +203,10 @@ std::vector<hardware_interface::CommandInterface> TopicBasedSystem::export_comma
 
 hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
-  rclcpp::spin_some(node_);
+  if (rclcpp::ok())
+  {
+    rclcpp::spin_some(node_);
+  }
 
   for (std::size_t i = 0; i < latest_joint_state_.name.size(); ++i)
   {
@@ -322,7 +325,10 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
     }
   }
 
-  topic_based_joint_commands_publisher_->publish(joint_state);
+  if (rclcpp::ok())
+  {
+    topic_based_joint_commands_publisher_->publish(joint_state);
+  }
 
   return hardware_interface::return_type::OK;
 }
