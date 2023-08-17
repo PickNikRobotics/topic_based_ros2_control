@@ -203,7 +203,10 @@ std::vector<hardware_interface::CommandInterface> TopicBasedSystem::export_comma
 
 hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
-  rclcpp::spin_some(node_);
+  if (rclcpp::ok())
+  {
+    rclcpp::spin_some(node_);
+  }
 
   for (std::size_t i = 0; i < latest_joint_state_.name.size(); ++i)
   {
@@ -278,7 +281,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
     joint_state.name.push_back(info_.joints[i].name);
     joint_state.header.stamp = node_->now();
     // only send commands to the interfaces that are defined for this joint
-    for (auto interface : info_.joints[i].command_interfaces)
+    for (const auto& interface : info_.joints[i].command_interfaces)
     {
       if (interface.name == hardware_interface::HW_IF_POSITION)
       {
@@ -302,15 +305,30 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
 
   for (const auto& mimic_joint : mimic_joints_)
   {
-    joint_state.position[mimic_joint.joint_index] =
-        mimic_joint.multiplier * joint_state.position[mimic_joint.mimicked_joint_index];
-    joint_state.velocity[mimic_joint.joint_index] =
-        mimic_joint.multiplier * joint_state.velocity[mimic_joint.mimicked_joint_index];
-    joint_state.effort[mimic_joint.joint_index] =
-        mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
+    for (const auto& interface : info_.joints[mimic_joint.mimicked_joint_index].command_interfaces)
+    {
+      if (interface.name == hardware_interface::HW_IF_POSITION)
+      {
+        joint_state.position[mimic_joint.joint_index] =
+            mimic_joint.multiplier * joint_state.position[mimic_joint.mimicked_joint_index];
+      }
+      else if (interface.name == hardware_interface::HW_IF_VELOCITY)
+      {
+        joint_state.velocity[mimic_joint.joint_index] =
+            mimic_joint.multiplier * joint_state.velocity[mimic_joint.mimicked_joint_index];
+      }
+      else if (interface.name == hardware_interface::HW_IF_EFFORT)
+      {
+        joint_state.effort[mimic_joint.joint_index] =
+            mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
+      }
+    }
   }
 
-  topic_based_joint_commands_publisher_->publish(joint_state);
+  if (rclcpp::ok())
+  {
+    topic_based_joint_commands_publisher_->publish(joint_state);
+  }
 
   return hardware_interface::return_type::OK;
 }
