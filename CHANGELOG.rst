@@ -2,6 +2,13 @@
 Changelog for package topic_based_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.0 (2023-09-04)
+------------------
+* Check the mimicked joint interface before setting them (`#13 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/13>`_)
+* Check ros context is valid before spinning the node (`#13 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/13>`_)
+* Enable mobile base in Isaac (`#12 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/12>`_)
+* Contributors: Jafar Uruç, Marq Rasmussen
+
 0.1.1 (2023-06-09)
 ------------------
 * colcon: fixup missing test dependency (`#9 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/9>`_)
