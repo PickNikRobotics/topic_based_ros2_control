@@ -270,7 +270,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
       joint_states_[POSITION_INTERFACE_INDEX].cbegin(), joint_states_[POSITION_INTERFACE_INDEX].cend(),
       joint_commands_[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
       [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
-  if (diff < trigger_joint_command_threshold_)
+  if (diff <= trigger_joint_command_threshold_)
   {
     return hardware_interface::return_type::OK;
   }
