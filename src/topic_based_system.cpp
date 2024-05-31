@@ -114,6 +114,8 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
         throw std::runtime_error(std::string("Mimicked joint '") + joint.parameters.at("mimic") + "' not found");
       }
       MimicJoint mimic_joint;
+      mimic_joint.joint_name = joint.name;
+      mimic_joint.mimicked_joint_name = mimicked_joint_it->name;
       mimic_joint.joint_index = i;
       mimic_joint.mimicked_joint_index =
           static_cast<std::size_t>(std::distance(info_.joints.begin(), mimicked_joint_it));
@@ -271,64 +273,150 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
       joint_states_[POSITION_INTERFACE_INDEX].cbegin(), joint_states_[POSITION_INTERFACE_INDEX].cend(),
       joint_commands_[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
       [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
-  if (diff <= trigger_joint_command_threshold_)
+
+  bool exist_velocity_command = false;
+  static bool exist_velocity_command_old = false; // Use old state to publish zero velocities
+  for (std::size_t i = 0; i < info_.joints.size(); ++i)
+  {
+    if (fabs(joint_commands_[VELOCITY_INTERFACE_INDEX][i]) > trigger_joint_command_threshold_)
+    {
+      exist_velocity_command = true;
+    }
+  }
+
+  if (diff <= trigger_joint_command_threshold_ && (exist_velocity_command == false && exist_velocity_command_old == false))
   {
     return hardware_interface::return_type::OK;
   }
+  
+  exist_velocity_command_old = exist_velocity_command;
 
-  sensor_msgs::msg::JointState joint_state;
-  for (std::size_t i = 0; i < info_.joints.size(); ++i)
+  // For Position Joint
   {
-    joint_state.name.push_back(info_.joints[i].name);
+    sensor_msgs::msg::JointState joint_state;
     joint_state.header.stamp = node_->now();
-    // only send commands to the interfaces that are defined for this joint
-    for (const auto& interface : info_.joints[i].command_interfaces)
+    for (std::size_t i = 0; i < info_.joints.size(); ++i)
     {
-      if (interface.name == hardware_interface::HW_IF_POSITION)
+      // only send commands to the interfaces that are defined for this joint
+      for (const auto& interface : info_.joints[i].command_interfaces)
       {
-        joint_state.position.push_back(joint_commands_[POSITION_INTERFACE_INDEX][i]);
-      }
-      else if (interface.name == hardware_interface::HW_IF_VELOCITY)
-      {
-        joint_state.velocity.push_back(joint_commands_[VELOCITY_INTERFACE_INDEX][i]);
-      }
-      else if (interface.name == hardware_interface::HW_IF_EFFORT)
-      {
-        joint_state.effort.push_back(joint_commands_[EFFORT_INTERFACE_INDEX][i]);
-      }
-      else
-      {
-        RCLCPP_WARN_ONCE(node_->get_logger(), "Joint '%s' has unsupported command interfaces found: %s.",
-                         info_.joints[i].name.c_str(), interface.name.c_str());
+        if (interface.name == hardware_interface::HW_IF_POSITION)
+        {
+          joint_state.name.push_back(info_.joints[i].name);
+          joint_state.position.push_back(joint_commands_[POSITION_INTERFACE_INDEX][i]);
+        }
       }
     }
-  }
 
-  for (const auto& mimic_joint : mimic_joints_)
-  {
-    for (const auto& interface : info_.joints[mimic_joint.mimicked_joint_index].command_interfaces)
+    for (const auto& mimic_joint : mimic_joints_)
     {
-      if (interface.name == hardware_interface::HW_IF_POSITION)
+      for (const auto& interface : info_.joints[mimic_joint.mimicked_joint_index].command_interfaces)
       {
-        joint_state.position[mimic_joint.joint_index] =
-            mimic_joint.multiplier * joint_state.position[mimic_joint.mimicked_joint_index];
-      }
-      else if (interface.name == hardware_interface::HW_IF_VELOCITY)
-      {
-        joint_state.velocity[mimic_joint.joint_index] =
-            mimic_joint.multiplier * joint_state.velocity[mimic_joint.mimicked_joint_index];
-      }
-      else if (interface.name == hardware_interface::HW_IF_EFFORT)
-      {
-        joint_state.effort[mimic_joint.joint_index] =
-            mimic_joint.multiplier * joint_state.effort[mimic_joint.mimicked_joint_index];
+        if (interface.name == hardware_interface::HW_IF_POSITION)
+        {
+          for (size_t index = 0; index < joint_state.name.size(); index++)
+          {
+            if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
+            {
+              joint_state.name.push_back(mimic_joint.joint_name);
+              joint_state.position.push_back(mimic_joint.multiplier * joint_state.position[index]);          
+            }
+          }
+        }
       }
     }
-  }
 
-  if (rclcpp::ok())
+    if (rclcpp::ok() && joint_state.name.size() != 0)
+    {
+      topic_based_joint_commands_publisher_->publish(joint_state);
+    }
+  }
+  
+  // For Velocity Joint
   {
-    topic_based_joint_commands_publisher_->publish(joint_state);
+    sensor_msgs::msg::JointState joint_state;
+    joint_state.header.stamp = node_->now();
+    for (std::size_t i = 0; i < info_.joints.size(); ++i)
+    {
+      // only send commands to the interfaces that are defined for this joint
+      for (const auto& interface : info_.joints[i].command_interfaces)
+      {
+        if (interface.name == hardware_interface::HW_IF_VELOCITY)
+        {
+          joint_state.name.push_back(info_.joints[i].name);
+          joint_state.velocity.push_back(joint_commands_[VELOCITY_INTERFACE_INDEX][i]);
+        }
+      }
+    }
+
+    for (const auto& mimic_joint : mimic_joints_)
+    {
+      for (const auto& interface : info_.joints[mimic_joint.mimicked_joint_index].command_interfaces)
+      {
+        if (interface.name == hardware_interface::HW_IF_VELOCITY)
+        {
+          for (size_t index = 0; index < joint_state.name.size(); index++)
+          {
+            if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
+            {
+              joint_state.name.push_back(mimic_joint.joint_name);
+              joint_state.position.push_back(mimic_joint.multiplier * joint_state.velocity[index]);          
+            }
+          }
+        }
+      }
+    }
+
+    if (rclcpp::ok() && joint_state.name.size() != 0)
+    {
+      topic_based_joint_commands_publisher_->publish(joint_state);
+    }
+  }
+  
+  // For Effort Joint
+  {
+    sensor_msgs::msg::JointState joint_state;
+    joint_state.header.stamp = node_->now();
+    for (std::size_t i = 0; i < info_.joints.size(); ++i)
+    {
+      // only send commands to the interfaces that are defined for this joint
+      for (const auto& interface : info_.joints[i].command_interfaces)
+      {
+        if (interface.name == hardware_interface::HW_IF_EFFORT)
+        {
+          joint_state.name.push_back(info_.joints[i].name);
+          joint_state.effort.push_back(joint_commands_[EFFORT_INTERFACE_INDEX][i]);
+        }
+        else
+        {
+          RCLCPP_WARN_ONCE(node_->get_logger(), "Joint '%s' has unsupported command interfaces found: %s.",
+                           info_.joints[i].name.c_str(), interface.name.c_str());
+        }
+      }
+    }
+
+    for (const auto& mimic_joint : mimic_joints_)
+    {
+      for (const auto& interface : info_.joints[mimic_joint.mimicked_joint_index].command_interfaces)
+      {
+        if (interface.name == hardware_interface::HW_IF_EFFORT)
+        {
+          for (size_t index = 0; index < joint_state.name.size(); index++)
+          {
+            if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
+            {
+              joint_state.name.push_back(mimic_joint.joint_name);
+              joint_state.position.push_back(mimic_joint.multiplier * joint_state.effort[index]);          
+            }
+          }
+        }
+      }
+    }
+
+    if (rclcpp::ok() && joint_state.name.size() != 0)
+    {
+      topic_based_joint_commands_publisher_->publish(joint_state);
+    }
   }
 
   return hardware_interface::return_type::OK;
