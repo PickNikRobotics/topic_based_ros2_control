@@ -359,7 +359,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
             if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
             {
               joint_state.name.push_back(mimic_joint.joint_name);
-              joint_state.position.push_back(mimic_joint.multiplier * joint_state.velocity[index]);          
+              joint_state.velocity.push_back(mimic_joint.multiplier * joint_state.velocity[index]);          
             }
           }
         }
@@ -405,7 +405,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
             if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
             {
               joint_state.name.push_back(mimic_joint.joint_name);
-              joint_state.position.push_back(mimic_joint.multiplier * joint_state.effort[index]);          
+              joint_state.effort.push_back(mimic_joint.multiplier * joint_state.effort[index]);          
             }
           }
         }
