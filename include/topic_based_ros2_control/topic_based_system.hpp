@@ -80,6 +80,8 @@ private:
 
   struct MimicJoint
   {
+    std::string joint_name;
+    std::string mimicked_joint_name;
     std::size_t joint_index;
     std::size_t mimicked_joint_index;
     double multiplier = 1.0;
