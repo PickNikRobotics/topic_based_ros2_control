@@ -387,11 +387,6 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
           joint_state.name.push_back(info_.joints[i].name);
           joint_state.effort.push_back(joint_commands_[EFFORT_INTERFACE_INDEX][i]);
         }
-        else
-        {
-          RCLCPP_WARN_ONCE(node_->get_logger(), "Joint '%s' has unsupported command interfaces found: %s.",
-                           info_.joints[i].name.c_str(), interface.name.c_str());
-        }
       }
     }
 
