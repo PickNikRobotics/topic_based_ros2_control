@@ -71,6 +71,8 @@ private:
   rclcpp::Node::SharedPtr node_;
   sensor_msgs::msg::JointState latest_joint_state_;
   bool sum_wrapped_joint_states_{ false };
+  bool initial_states_as_initial_cmd_{ false };
+  bool ready_to_send_cmds_{ false };
 
   /// Use standard interfaces for joints because they are relevant for dynamic behavior
   std::array<std::string, 4> standard_interfaces_ = { hardware_interface::HW_IF_POSITION,
