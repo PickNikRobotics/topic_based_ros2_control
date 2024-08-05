@@ -78,6 +78,7 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   }
 
   // Initial command values
+  initial_joint_commands_ = joint_commands_;
   for (auto i = 0u; i < info_.joints.size(); i++)
   {
     const auto& component = info_.joints[i];
@@ -92,7 +93,7 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
         if (!interface.initial_value.empty())
         {
           joint_states_[index][i] = std::stod(interface.initial_value);
-          joint_commands_[index][i] = std::stod(interface.initial_value);
+          initial_joint_commands_[index][i] = std::stod(interface.initial_value);
         }
       }
     }
@@ -164,6 +165,10 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   {
     initial_states_as_initial_cmd_ = true;
     ready_to_send_cmds_ = false;
+  }
+  if (get_hardware_parameter("wait_for_reaching_initial_values", "false") == "false")
+  {
+    initial_cmd_reached_ = true;
   }
 
   return CallbackReturn::SUCCESS;
@@ -288,6 +293,22 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
   if (!ready_to_send_cmds_)
   {
     return hardware_interface::return_type::ERROR;
+  }
+
+  if (initial_cmd_reached_ == false)
+  {
+    const auto diff = std::transform_reduce(
+        joint_states_[POSITION_INTERFACE_INDEX].cbegin(), joint_states_[POSITION_INTERFACE_INDEX].cend(),
+        initial_joint_commands_[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
+        [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
+    if (diff < trigger_joint_command_threshold_)
+    {
+      initial_cmd_reached_ = true;
+    }
+    else
+    {
+      joint_commands_ = initial_joint_commands_;
+    }
   }
   // To avoid spamming TopicBased's joint command topic we check the difference between the joint states and
   // the current joint commands, if it's smaller than a threshold we don't publish it.
