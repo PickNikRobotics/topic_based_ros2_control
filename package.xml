@@ -21,6 +21,8 @@
     <depend>hardware_interface</depend>
     <depend>sensor_msgs</depend>
 
+    <exec_depend>xacro</exec_depend>
+
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>picknik_ament_copyright</test_depend>
     <test_depend>ros2_control_test_assets</test_depend>
