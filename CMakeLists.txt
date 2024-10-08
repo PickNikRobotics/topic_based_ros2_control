@@ -60,6 +60,8 @@ if(BUILD_TESTING)
 
   # ROS2 linters, but disable copyright test. PickNik's copyright's may not conform
   # to this test
+  set(ament_cmake_flake8_FOUND TRUE)
+  set(ament_cmake_pep257_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   set(ament_cmake_uncrustify_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
