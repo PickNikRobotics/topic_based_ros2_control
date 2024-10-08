@@ -25,6 +25,7 @@
     <test_depend>picknik_ament_copyright</test_depend>
     <test_depend>ros2_control_test_assets</test_depend>
     <test_depend>ament_lint_common</test_depend>
+    <test_depend>ros_testing</test_depend>
 
     <export>
         <build_type>ament_cmake</build_type>
