@@ -97,7 +97,6 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
       }
     }
   }
-  ready_to_send_cmds_ = true;
 
   // Search for mimic joints
   for (auto i = 0u; i < info_.joints.size(); ++i)
@@ -159,11 +158,6 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   if (get_hardware_parameter("sum_wrapped_joint_states", "false") == "true")
   {
     sum_wrapped_joint_states_ = true;
-  }
-  if (get_hardware_parameter("use_initial_states_as_initial_commands", "false") == "true")
-  {
-    initial_states_as_initial_cmd_ = true;
-    ready_to_send_cmds_ = false;
   }
   if (get_hardware_parameter("wait_for_reaching_initial_values", "false") == "false")
   {
@@ -257,18 +251,6 @@ hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*tim
     }
   }
 
-  if (!ready_to_send_cmds_ && initial_states_as_initial_cmd_)
-  {
-    for (std::size_t i = 0; i < joint_states_.size(); ++i)
-    {
-      for (std::size_t j = 0; j < joint_states_[i].size(); ++j)
-      {
-        joint_commands_[i][j] = joint_states_[i][j];
-      }
-    }
-    ready_to_send_cmds_ = true;
-  }
-
   return hardware_interface::return_type::OK;
 }
 
@@ -289,17 +271,12 @@ bool TopicBasedSystem::getInterface(const std::string& name, const std::string& 
 
 hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
-  if (!ready_to_send_cmds_)
-  {
-    return hardware_interface::return_type::ERROR;
-  }
-
   std::vector<std::vector<double>> target_joint_commands;
   if (initial_cmd_reached_ == false)
   {
-    double abs_sum = std::accumulate(joint_commands_[POSITION_INTERFACE_INDEX].begin(), joint_commands_[POSITION_INTERFACE_INDEX].end(), 0, [](double sum, double val) {
-        return sum + std::abs(val);
-    });
+    double abs_sum = std::accumulate(joint_commands_[POSITION_INTERFACE_INDEX].begin(),
+                                     joint_commands_[POSITION_INTERFACE_INDEX].end(), 0,
+                                     [](double sum, double val) { return sum + std::abs(val); });
     if (abs_sum >= trigger_joint_command_threshold_)
     {
       initial_cmd_reached_ = true;
@@ -321,7 +298,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
       [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
 
   bool exist_velocity_command = false;
-  static bool exist_velocity_command_old = false; // Use old state to publish zero velocities
+  static bool exist_velocity_command_old = false;  // Use old state to publish zero velocities
   for (std::size_t i = 0; i < info_.joints.size(); ++i)
   {
     if (fabs(target_joint_commands[VELOCITY_INTERFACE_INDEX][i]) > trigger_joint_command_threshold_)
@@ -330,11 +307,12 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
     }
   }
 
-  if (diff <= trigger_joint_command_threshold_ && (exist_velocity_command == false && exist_velocity_command_old == false))
+  if (diff <= trigger_joint_command_threshold_ &&
+      (exist_velocity_command == false && exist_velocity_command_old == false))
   {
     return hardware_interface::return_type::OK;
   }
-  
+
   exist_velocity_command_old = exist_velocity_command;
 
   // For Position Joint
@@ -365,7 +343,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
             if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
             {
               joint_state.name.push_back(mimic_joint.joint_name);
-              joint_state.position.push_back(mimic_joint.multiplier * joint_state.position[index]);          
+              joint_state.position.push_back(mimic_joint.multiplier * joint_state.position[index]);
             }
           }
         }
@@ -377,7 +355,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
       topic_based_joint_commands_publisher_->publish(joint_state);
     }
   }
-  
+
   // For Velocity Joint
   {
     sensor_msgs::msg::JointState joint_state;
@@ -406,7 +384,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
             if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
             {
               joint_state.name.push_back(mimic_joint.joint_name);
-              joint_state.velocity.push_back(mimic_joint.multiplier * joint_state.velocity[index]);          
+              joint_state.velocity.push_back(mimic_joint.multiplier * joint_state.velocity[index]);
             }
           }
         }
@@ -418,7 +396,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
       topic_based_joint_commands_publisher_->publish(joint_state);
     }
   }
-  
+
   // For Effort Joint
   {
     sensor_msgs::msg::JointState joint_state;
@@ -447,7 +425,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
             if (joint_state.name[index] == mimic_joint.mimicked_joint_name)
             {
               joint_state.name.push_back(mimic_joint.joint_name);
-              joint_state.effort.push_back(mimic_joint.multiplier * joint_state.effort[index]);          
+              joint_state.effort.push_back(mimic_joint.multiplier * joint_state.effort[index]);
             }
           }
         }
