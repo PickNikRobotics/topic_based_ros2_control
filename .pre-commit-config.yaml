@@ -1,17 +1,3 @@
-# To use:
-#
-#     pre-commit run -a
-#
-# Or:
-#
-#     pre-commit install  # (runs every time you commit in git)
-#
-# To update this file:
-#
-#     pre-commit autoupdate
-#
-# See https://github.com/pre-commit/pre-commit
-
 repos:
   # Standard hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -73,3 +59,11 @@ repos:
     rev: v2.10.0
     hooks:
       - id: hadolint-docker
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.1.0"
+    hooks:
+      - id: prettier
+        additional_dependencies:
+          - "prettier@3.1.0"
+          - "@prettier/plugin-xml@3.3.1"
+        files: \.(xml|xacro|srdf)$
