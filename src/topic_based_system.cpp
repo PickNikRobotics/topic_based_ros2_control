@@ -78,7 +78,6 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   }
 
   // Initial command values
-  initial_joint_commands_ = joint_commands_;
   for (auto i = 0u; i < info_.joints.size(); i++)
   {
     const auto& component = info_.joints[i];
@@ -94,7 +93,6 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
         {
           joint_states_[index][i] = std::stod(interface.initial_value);
           joint_commands_[index][i] = std::stod(interface.initial_value);
-          initial_joint_commands_[index][i] = std::stod(interface.initial_value);
         }
       }
     }
@@ -160,10 +158,6 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   if (get_hardware_parameter("sum_wrapped_joint_states", "false") == "true")
   {
     sum_wrapped_joint_states_ = true;
-  }
-  if (get_hardware_parameter("wait_for_reaching_initial_values", "false") == "false")
-  {
-    initial_cmd_reached_ = true;
   }
 
   return CallbackReturn::SUCCESS;
@@ -273,37 +267,18 @@ bool TopicBasedSystem::getInterface(const std::string& name, const std::string& 
 
 hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
-  std::vector<std::vector<double>> target_joint_commands;
-  if (initial_cmd_reached_ == false)
-  {
-    double abs_sum = std::accumulate(joint_commands_[POSITION_INTERFACE_INDEX].begin(),
-                                     joint_commands_[POSITION_INTERFACE_INDEX].end(), 0,
-                                     [](double sum, double val) { return sum + std::abs(val); });
-    if (abs_sum >= trigger_joint_command_threshold_)
-    {
-      initial_cmd_reached_ = true;
-    }
-  }
-  if (initial_cmd_reached_ == false)
-  {
-    target_joint_commands = initial_joint_commands_;
-  }
-  else
-  {
-    target_joint_commands = joint_commands_;
-  }
   // To avoid spamming TopicBased's joint command topic we check the difference between the joint states and
   // the current joint commands, if it's smaller than a threshold we don't publish it.
   const auto diff = std::transform_reduce(
       joint_states_[POSITION_INTERFACE_INDEX].cbegin(), joint_states_[POSITION_INTERFACE_INDEX].cend(),
-      target_joint_commands[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
+      joint_commands_[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
       [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
 
   bool exist_velocity_command = false;
   static bool exist_velocity_command_old = false;  // Use old state to publish zero velocities
   for (std::size_t i = 0; i < info_.joints.size(); ++i)
   {
-    if (fabs(target_joint_commands[VELOCITY_INTERFACE_INDEX][i]) > trigger_joint_command_threshold_)
+    if (fabs(joint_commands_[VELOCITY_INTERFACE_INDEX][i]) > trigger_joint_command_threshold_)
     {
       exist_velocity_command = true;
     }
@@ -329,7 +304,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
         if (interface.name == hardware_interface::HW_IF_POSITION)
         {
           joint_state.name.push_back(info_.joints[i].name);
-          joint_state.position.push_back(target_joint_commands[POSITION_INTERFACE_INDEX][i]);
+          joint_state.position.push_back(joint_commands_[POSITION_INTERFACE_INDEX][i]);
         }
       }
     }
@@ -370,7 +345,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
         if (interface.name == hardware_interface::HW_IF_VELOCITY)
         {
           joint_state.name.push_back(info_.joints[i].name);
-          joint_state.velocity.push_back(target_joint_commands[VELOCITY_INTERFACE_INDEX][i]);
+          joint_state.velocity.push_back(joint_commands_[VELOCITY_INTERFACE_INDEX][i]);
         }
       }
     }
@@ -411,7 +386,7 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
         if (interface.name == hardware_interface::HW_IF_EFFORT)
         {
           joint_state.name.push_back(info_.joints[i].name);
-          joint_state.effort.push_back(target_joint_commands[EFFORT_INTERFACE_INDEX][i]);
+          joint_state.effort.push_back(joint_commands_[EFFORT_INTERFACE_INDEX][i]);
         }
       }
     }
