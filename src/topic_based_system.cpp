@@ -93,6 +93,7 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
         if (!interface.initial_value.empty())
         {
           joint_states_[index][i] = std::stod(interface.initial_value);
+          joint_commands_[index][i] = std::stod(interface.initial_value);
           initial_joint_commands_[index][i] = std::stod(interface.initial_value);
         }
       }
