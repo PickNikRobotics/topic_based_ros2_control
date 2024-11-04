@@ -13,6 +13,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   rclcpp
   hardware_interface
   sensor_msgs
+  range-v3
 )
 
 find_package(ament_cmake REQUIRED)

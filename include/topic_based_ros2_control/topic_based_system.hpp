@@ -61,6 +61,9 @@ public:
 
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
+  hardware_interface::return_type perform_command_mode_switch(const std::vector<std::string>& start_interfaces,
+                                                              const std::vector<std::string>& stop_interfaces) override;
+
   hardware_interface::return_type read(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
   hardware_interface::return_type write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) override;
@@ -89,6 +92,7 @@ private:
   /// The size of this vector is (standard_interfaces_.size() x nr_joints)
   std::vector<std::vector<double>> joint_commands_;
   std::vector<std::vector<double>> joint_states_;
+  std::vector<std::size_t> joint_control_mode_;
 
   // If the difference between the current joint state and joint command is less than this value,
   // the joint command will not be published.

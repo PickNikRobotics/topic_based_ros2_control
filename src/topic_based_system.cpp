@@ -36,6 +36,7 @@
 #include <vector>
 
 #include <angles/angles.h>
+#include <range/v3/all.hpp>
 #include <rclcpp/executors.hpp>
 #include <topic_based_ros2_control/topic_based_system.hpp>
 
@@ -58,7 +59,7 @@ namespace topic_based_ros2_control
 
 static constexpr std::size_t POSITION_INTERFACE_INDEX = 0;
 static constexpr std::size_t VELOCITY_INTERFACE_INDEX = 1;
-// JointState doesn't contain an acceleration field, so right now it's not used
+static constexpr std::size_t ACCELERATION_INTERFACE_INDEX = 2;
 static constexpr std::size_t EFFORT_INTERFACE_INDEX = 3;
 
 CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo& info)
@@ -73,8 +74,8 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   joint_states_.resize(standard_interfaces_.size());
   for (auto i = 0u; i < standard_interfaces_.size(); i++)
   {
-    joint_commands_[i].resize(info_.joints.size(), 0.0);
-    joint_states_[i].resize(info_.joints.size(), 0.0);
+    joint_commands_[i].resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    joint_states_[i].resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   }
 
   // Initial command values
@@ -199,7 +200,48 @@ std::vector<hardware_interface::CommandInterface> TopicBasedSystem::export_comma
     }
   }
 
+  joint_control_mode_.resize(info_.joints.size(), std::numeric_limits<std::size_t>::max());
+
   return command_interfaces;
+}
+
+hardware_interface::return_type
+TopicBasedSystem::perform_command_mode_switch(const std::vector<std::string>& start_interfaces,
+                                              const std::vector<std::string>& /*stop_interfaces*/)
+{
+  // TODO: Handle stop_interfaces as well
+  for (const auto& start_interface : start_interfaces)
+  {
+    const auto joint_it = ranges::find_if(info_.joints, [&](const auto& joint) {
+      return (start_interface.find(joint.name) != std::string::npos);
+    });
+    if (joint_it != info_.joints.end())
+    {
+      const std::size_t joint_index = static_cast<std::size_t>(std::distance(info_.joints.begin(), joint_it));
+
+      if (start_interface == info_.joints[joint_index].name + "/" + hardware_interface::HW_IF_POSITION)
+      {
+        joint_control_mode_[joint_index] = POSITION_INTERFACE_INDEX;
+      }
+      else if (start_interface == info_.joints[joint_index].name + "/" + hardware_interface::HW_IF_VELOCITY)
+      {
+        joint_control_mode_[joint_index] = VELOCITY_INTERFACE_INDEX;
+      }
+      else if (start_interface == info_.joints[joint_index].name + "/" + hardware_interface::HW_IF_EFFORT)
+      {
+        joint_control_mode_[joint_index] = EFFORT_INTERFACE_INDEX;
+      }
+      else if (start_interface == info_.joints[joint_index].name + "/" + hardware_interface::HW_IF_ACCELERATION)
+      {
+        joint_control_mode_[joint_index] = ACCELERATION_INTERFACE_INDEX;
+      }
+      else
+      {
+        RCLCPP_WARN_STREAM(node_->get_logger(), "Interface '" << start_interface << "' is not supported.");
+      }
+    }
+  }
+  return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type TopicBasedSystem::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
@@ -267,10 +309,15 @@ hardware_interface::return_type TopicBasedSystem::write(const rclcpp::Time& /*ti
 {
   // To avoid spamming TopicBased's joint command topic we check the difference between the joint states and
   // the current joint commands, if it's smaller than a threshold we don't publish it.
-  const auto diff = std::transform_reduce(
-      joint_states_[POSITION_INTERFACE_INDEX].cbegin(), joint_states_[POSITION_INTERFACE_INDEX].cend(),
-      joint_commands_[POSITION_INTERFACE_INDEX].cbegin(), 0.0,
-      [](const auto d1, const auto d2) { return std::abs(d1) + std::abs(d2); }, std::minus<double>{});
+  const auto diff = ranges::accumulate(
+      joint_control_mode_ | ranges::views::enumerate | ranges::views::transform([&](const auto index_mode) {
+        const auto [joint_index, control_mode] = index_mode;
+        if (control_mode == std::numeric_limits<std::size_t>::max())
+          return 0.0;
+        return std::abs(joint_states_[control_mode][joint_index] - joint_commands_[control_mode][joint_index]);
+      }),
+      0.0);
+
   if (diff <= trigger_joint_command_threshold_)
   {
     return hardware_interface::return_type::OK;
