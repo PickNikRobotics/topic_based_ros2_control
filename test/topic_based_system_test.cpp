@@ -33,6 +33,7 @@
 
 #include <gtest/gtest.h>
 #include <hardware_interface/resource_manager.hpp>
+#include <rclcpp/node.hpp>
 #include <rclcpp/utilities.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <ros2_control_test_assets/descriptions.hpp>
@@ -63,7 +64,9 @@ TEST(TestTopicBasedSystem, load_topic_based_system_2dof)
 )";
   auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_standard_interfaces_with_topic_based +
               ros2_control_test_assets::urdf_tail;
-  ASSERT_NO_THROW(hardware_interface::ResourceManager rm(urdf, true, false));
+  auto node = std::make_shared<rclcpp::Node>("test_topic_based_system");
+  ASSERT_NO_THROW(hardware_interface::ResourceManager rm(urdf, node->get_node_clock_interface(),
+                                                         node->get_node_logging_interface(), false));
 }
 
 int main(int argc, char** argv)
