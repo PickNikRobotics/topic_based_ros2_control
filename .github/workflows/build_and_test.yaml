@@ -1,7 +1,7 @@
 # This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
 # For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
 
-name: Build and Test (humble)
+name: Build and Test
 
 # This determines when this workflow is run
 on:
@@ -20,15 +20,13 @@ jobs:
       fail-fast: false
       matrix:
         env:
-          - CI_NAME: build-and-test
-          # TODO: Enable clang-tidy it's failing to errors unrelated to this repo
-          # - CI_NAME: clang-tidy
-          #  CLANG_TIDY: true
+          - ROS_DISTRO: jazzy
+          - ROS_DISTRO: humble
+          - ROS_DISTRO: rolling
 
     env:
       CCACHE_DIR: /github/home/.ccache
       CXXFLAGS: "-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls"
-      ROS_DISTRO: humble
       ROS_REPO: main
 
     runs-on: ubuntu-latest

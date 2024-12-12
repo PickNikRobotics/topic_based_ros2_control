@@ -33,9 +33,14 @@
 
 #include <gtest/gtest.h>
 #include <hardware_interface/resource_manager.hpp>
+#include <rclcpp/node.hpp>
 #include <rclcpp/utilities.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <ros2_control_test_assets/descriptions.hpp>
+
+#define VERSION_GREATER_EQUAL(major1, minor1, patch1, major2, minor2, patch2)                                          \
+  ((major1) > (major2) ||                                                                                              \
+   ((major1) == (major2) && ((minor1) > (minor2) || ((minor1) == (minor2) && (patch1) >= (patch2)))))
 
 TEST(TestTopicBasedSystem, load_topic_based_system_2dof)
 {
@@ -63,7 +68,16 @@ TEST(TestTopicBasedSystem, load_topic_based_system_2dof)
 )";
   auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_standard_interfaces_with_topic_based +
               ros2_control_test_assets::urdf_tail;
+  auto node = std::make_shared<rclcpp::Node>("test_topic_based_system");
+
+// The API of the RessourceManager has changed in hardware_interface 4.13.0
+#if VERSION_GREATER_EQUAL(HARDWARE_INTERFACE_VERSION_MAJOR, HARDWARE_INTERFACE_VERSION_MINOR,                          \
+                          HARDWARE_INTERFACE_VERSION_PATCH, 4, 13, 0)
+  ASSERT_NO_THROW(hardware_interface::ResourceManager rm(urdf, node->get_node_clock_interface(),
+                                                         node->get_node_logging_interface(), false));
+#else
   ASSERT_NO_THROW(hardware_interface::ResourceManager rm(urdf, true, false));
+#endif
 }
 
 int main(int argc, char** argv)
