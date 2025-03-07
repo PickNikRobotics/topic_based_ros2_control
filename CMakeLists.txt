@@ -68,12 +68,6 @@ if(BUILD_TESTING)
   target_link_libraries(topic_based_system_test
     ${PROJECT_NAME})
   ament_target_dependencies(topic_based_system_test ${THIS_PACKAGE_INCLUDE_DEPENDS} ros2_control_test_assets)
-  target_compile_definitions(
-    topic_based_system_test
-    PRIVATE
-      HARDWARE_INTERFACE_VERSION_MAJOR=${hardware_interface_VERSION_MAJOR}
-      HARDWARE_INTERFACE_VERSION_MINOR=${hardware_interface_VERSION_MINOR}
-      HARDWARE_INTERFACE_VERSION_PATCH=${hardware_interface_VERSION_PATCH})
 endif()
 
 pluginlib_export_plugin_description_file(hardware_interface topic_based_ros2_control_plugin_description.xml)
