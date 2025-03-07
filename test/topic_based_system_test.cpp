@@ -32,7 +32,11 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#if __has_include(<hardware_interface/hardware_interface/version.h>)
 #include <hardware_interface/hardware_interface/version.h>
+#else
+#include <hardware_interface/version.h>
+#endif
 #include <hardware_interface/resource_manager.hpp>
 #include <rclcpp/node.hpp>
 #include <rclcpp/utilities.hpp>
