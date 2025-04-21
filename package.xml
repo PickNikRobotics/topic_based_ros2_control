@@ -1,32 +1,48 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <package format="3">
-    <name>topic_based_ros2_control</name>
-    <version>0.2.0</version>
-    <description>ros2 control hardware interface for topic_based sim</description>
+  <name>topic_based_ros2_control</name>
+  <version>0.2.0</version>
+  <description>ros2 control hardware interface for topic_based sim</description>
 
-    <maintainer email="marq.razz@gmail.com">Marq Rasmussen</maintainer>
-    <maintainer email="jafar@picknik.ai">Jafar</maintainer>
-    <author email="jafar@picknik.ai">Jafar</author>
+  <maintainer email="marq.razz@gmail.com">Marq Rasmussen</maintainer>
+  <maintainer email="jafar@picknik.ai">Jafar</maintainer>
+  <author email="jafar@picknik.ai">Jafar</author>
 
-    <license>BSD</license>
+  <license>BSD</license>
 
-    <url type="website">https://github.com/PickNikRobotics/topic_based_ros2_control</url>
-    <url type="bugtracker">https://github.com/PickNikRobotics/topic_based_ros2_control/issues</url>
-    <url type="repository">https://github.com/PickNikRobotics/topic_based_ros2_control/</url>
+  <url type="website">
+    https://github.com/PickNikRobotics/topic_based_ros2_control
+  </url>
+  <url type="bugtracker">
+    https://github.com/PickNikRobotics/topic_based_ros2_control/issues
+  </url>
+  <url type="repository">
+    https://github.com/PickNikRobotics/topic_based_ros2_control/
+  </url>
 
-    <buildtool_depend>ament_cmake</buildtool_depend>s
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>angles</depend>
-    <depend>rclcpp</depend>
-    <depend>hardware_interface</depend>
-    <depend>sensor_msgs</depend>
+  <depend>angles</depend>
+  <depend>rclcpp</depend>
+  <depend>hardware_interface</depend>
+  <depend>sensor_msgs</depend>
 
-    <test_depend>ament_lint_auto</test_depend>
-    <test_depend>picknik_ament_copyright</test_depend>
-    <test_depend>ros2_control_test_assets</test_depend>
-    <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>controller_manager</test_depend>
+  <test_depend>joint_state_broadcaster</test_depend>
+  <test_depend>joint_trajectory_controller</test_depend>
+  <test_depend>launch</test_depend>
+  <test_depend>launch_ros</test_depend>
+  <test_depend>launch_testing</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>robot_state_publisher</test_depend>
+  <test_depend>ros2_control_test_assets</test_depend>
+  <test_depend>ros_testing</test_depend>
+  <test_depend>xacro</test_depend>
 
-    <export>
-        <build_type>ament_cmake</build_type>
-    </export>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

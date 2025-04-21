@@ -1,0 +1,20 @@
+[tool.ruff]
+extend-select = [
+  # Enabled by default
+  # pyflakes
+  # "F",
+  # pycodestyle
+  # "E",
+  "W",
+  # isort
+  "I",
+  # NumPy-specific rules
+  "NPY",
+  # Ruff-specific rules
+  "RUF",
+]
+# line-length = 88
+ignore = ["E501"]
+target-version = "py310"
+[tool.ruff.pydocstyle]
+convention = "google"
