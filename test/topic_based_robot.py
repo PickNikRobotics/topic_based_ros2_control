@@ -84,11 +84,6 @@ class TopicBasedRobot(Node):
                 index = msg.name.index(joint_name)
             except ValueError:
                 continue
-                #
-                # Commented out because the joints that the message outputs were sometimes missing
-                #
-                #msg = f"Joint name '{joint_name}' not in input keys {msg.name}"
-                #raise ValueError(msg) from None
             joint_states.append(msg.position[index])
         return joint_states
 
@@ -102,11 +97,6 @@ class TopicBasedRobot(Node):
                 index = msg.name.index(joint_name)
             except ValueError:
                 continue
-                #
-                # Commented out because the joints that the message outputs were sometimes missing
-                #
-                #msg = f"Joint name '{joint_name}' not in input keys {msg.name}"
-                #raise ValueError(msg) from None
             joint_states.append(msg.velocity[index])
         return joint_states
 
@@ -120,11 +110,6 @@ class TopicBasedRobot(Node):
                 index = msg.name.index(joint_name)
             except ValueError:
                 continue
-                #
-                # Commented out because the joints that the message outputs were sometimes missing
-                #
-                #msg = f"Joint name '{joint_name}' not in input keys {msg.name}"
-                #raise ValueError(msg) from None
             joint_states.append(msg.effort[index])
         return joint_states
 
