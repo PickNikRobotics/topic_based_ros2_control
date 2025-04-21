@@ -32,7 +32,13 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#if __has_include(<hardware_interface/hardware_interface/version.h>)
+#include <hardware_interface/hardware_interface/version.h>
+#else
+#include <hardware_interface/version.h>
+#endif
 #include <hardware_interface/resource_manager.hpp>
+#include <rclcpp/node.hpp>
 #include <rclcpp/utilities.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <ros2_control_test_assets/descriptions.hpp>
@@ -63,7 +69,15 @@ TEST(TestTopicBasedSystem, load_topic_based_system_2dof)
 )";
   auto urdf = ros2_control_test_assets::urdf_head + hardware_system_2dof_standard_interfaces_with_topic_based +
               ros2_control_test_assets::urdf_tail;
+  auto node = std::make_shared<rclcpp::Node>("test_topic_based_system");
+
+// The API of the RessourceManager has changed in hardware_interface 4.13.0
+#if HARDWARE_INTERFACE_VERSION_GTE(4, 13, 0)
+  ASSERT_NO_THROW(hardware_interface::ResourceManager rm(urdf, node->get_node_clock_interface(),
+                                                         node->get_node_logging_interface(), false));
+#else
   ASSERT_NO_THROW(hardware_interface::ResourceManager rm(urdf, true, false));
+#endif
 }
 
 int main(int argc, char** argv)
