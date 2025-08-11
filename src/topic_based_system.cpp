@@ -61,9 +61,9 @@ static constexpr std::size_t VELOCITY_INTERFACE_INDEX = 1;
 // JointState doesn't contain an acceleration field, so right now it's not used
 static constexpr std::size_t EFFORT_INTERFACE_INDEX = 3;
 
-CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo& info)
+CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareComponentInterfaceParams& params)
 {
-  if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
+  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS)
   {
     return CallbackReturn::ERROR;
   }
@@ -73,14 +73,14 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   joint_states_.resize(standard_interfaces_.size());
   for (auto i = 0u; i < standard_interfaces_.size(); i++)
   {
-    joint_commands_[i].resize(info_.joints.size(), 0.0);
-    joint_states_[i].resize(info_.joints.size(), 0.0);
+    joint_commands_[i].resize(params.hardware_info.joints.size(), 0.0);
+    joint_states_[i].resize(params.hardware_info.joints.size(), 0.0);
   }
 
   // Initial command values
-  for (auto i = 0u; i < info_.joints.size(); i++)
+  for (auto i = 0u; i < params.hardware_info.joints.size(); i++)
   {
-    const auto& component = info_.joints[i];
+    const auto& component = params.hardware_info.joints[i];
     for (const auto& interface : component.state_interfaces)
     {
       auto it = std::find(standard_interfaces_.begin(), standard_interfaces_.end(), interface.name);
@@ -99,24 +99,24 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
   }
 
   // Search for mimic joints
-  for (auto i = 0u; i < info_.joints.size(); ++i)
+  for (auto i = 0u; i < params.hardware_info.joints.size(); ++i)
   {
-    const auto& joint = info_.joints.at(i);
+    const auto& joint = params.hardware_info.joints.at(i);
     if (joint.parameters.find("mimic") != joint.parameters.cend())
     {
       const auto mimicked_joint_it = std::find_if(
-          info_.joints.begin(), info_.joints.end(),
+          params.hardware_info.joints.begin(), params.hardware_info.joints.end(),
           [&mimicked_joint = joint.parameters.at("mimic")](const hardware_interface::ComponentInfo& joint_info) {
             return joint_info.name == mimicked_joint;
           });
-      if (mimicked_joint_it == info_.joints.cend())
+      if (mimicked_joint_it == params.hardware_info.joints.cend())
       {
         throw std::runtime_error(std::string("Mimicked joint '") + joint.parameters.at("mimic") + "' not found");
       }
       MimicJoint mimic_joint;
       mimic_joint.joint_index = i;
       mimic_joint.mimicked_joint_index =
-          static_cast<std::size_t>(std::distance(info_.joints.begin(), mimicked_joint_it));
+          static_cast<std::size_t>(std::distance(params.hardware_info.joints.begin(), mimicked_joint_it));
       auto param_it = joint.parameters.find("multiplier");
       if (param_it != joint.parameters.end())
       {
@@ -126,8 +126,8 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
     }
   }
 
-  const auto get_hardware_parameter = [this](const std::string& parameter_name, const std::string& default_value) {
-    if (auto it = info_.hardware_parameters.find(parameter_name); it != info_.hardware_parameters.end())
+  const auto get_hardware_parameter = [&params](const std::string& parameter_name, const std::string& default_value) {
+    if (auto it = params.hardware_info.hardware_parameters.find(parameter_name); it != params.hardware_info.hardware_parameters.end())
     {
       return it->second;
     }
@@ -136,11 +136,11 @@ CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo&
 
   // Add random ID to prevent warnings about multiple publishers within the same node
   rclcpp::NodeOptions options;
-  options.arguments({ "--ros-args", "-r", "__node:=topic_based_ros2_control_" + info_.name });
+  options.arguments({ "--ros-args", "-r", "__node:=topic_based_ros2_control_" + params.hardware_info.name });
 
   node_ = rclcpp::Node::make_shared("_", options);
 
-  if (auto it = info_.hardware_parameters.find("trigger_joint_command_threshold"); it != info_.hardware_parameters.end())
+  if (auto it = params.hardware_info.hardware_parameters.find("trigger_joint_command_threshold"); it != params.hardware_info.hardware_parameters.end())
   {
     trigger_joint_command_threshold_ = std::stod(it->second);
   }
