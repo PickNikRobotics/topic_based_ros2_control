@@ -2,6 +2,41 @@
 Changelog for package topic_based_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Deprecation notices should be seen. Do not convert warnings into errors. (`#36 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/36>`_)
+* Add integration test (`#28 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/28>`_)
+  * Add ruff/ruff format to pre-commit & Add integration test
+  * Set joint_states\_ to initial_value as well
+* Update HARDWARE_INTERFACE_VERSION_GTE from hardware_interface's version.h (`#32 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/32>`_)
+* Update README.md
+* Fix RessourceManager constructor (`#30 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/30>`_)
+  * Fix rm() constructor
+  * Enable CI on jazzy/rolling
+  * Add macro to check hardware_interface version
+  ---------
+  Co-authored-by: JafarAbdi <jafar.uruc@gmail.com>
+* Update README.md (`#31 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/31>`_)
+* Allow publisher to always publish by setting the threshold to zero. (`#22 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/22>`_)
+  * Allow publisher to always publish by setting the threshold to zero.
+  On documentation (https://github.com/PickNikRobotics/topic_based_ros2_control/blob/main/doc/user.md)
+  trigger_joint_command_threshold can be configuration with zero so that the allow publisher to
+  always send the joint command.
+  However, in the code the condition was set with:
+  ```
+  if (diff <= trigger_joint_command_threshold\_)
+  {
+  return hardware_interface::return_type::OK;
+  }
+  ```
+  In case trigger_joint_command_threshold\_ is set to zero, diff can still be zero so
+  it will not trigger the send.
+  This PR tries to address the above mentioned case.
+  * Revert "Allow publisher to always publish by setting the threshold to zero."
+  This reverts commit a799b539d877d1a2ca7203f5d57bc4c805df7202.
+  * Update the documentation instead (-1).
+* Contributors: Bence Magyar, Christoph Fröhlich, Jafar Uruç, Yong Tang
+
 0.2.0 (2023-09-04)
 ------------------
 * Check the mimicked joint interface before setting them (`#13 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/13>`_)
