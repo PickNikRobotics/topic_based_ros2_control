@@ -2,8 +2,8 @@
 Changelog for package topic_based_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2025-08-16)
+------------------
 * Deprecation notices should be seen. Do not convert warnings into errors. (`#36 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/36>`_)
 * Add integration test (`#28 <https://github.com/PickNikRobotics/topic_based_ros2_control/issues/28>`_)
   * Add ruff/ruff format to pre-commit & Add integration test
