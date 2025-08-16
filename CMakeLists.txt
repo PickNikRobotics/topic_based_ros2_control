@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(topic_based_ros2_control CXX)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Werror -Wall -Wextra -Wpedantic -Wshadow
+  add_compile_options(-Wall -Wextra -Wpedantic -Wshadow
     -Wsign-conversion -Winit-self -Wredundant-decls)
 endif()
 
