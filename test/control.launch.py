@@ -41,9 +41,9 @@ SCRIPT_PATH = Path(os.path.realpath(__file__)).parent
 def generate_launch_description():
     ros2_controllers_file = Path(SCRIPT_PATH / "ros2_controllers.yaml")
     robot_description = {
-        "robot_description": xacro.process_file(SCRIPT_PATH / "rrr.urdf.xacro").toxml(),
+        "robot_description": xacro.process_file(SCRIPT_PATH / "diffbot_with_rrr.urdf.xacro").toxml(),
     }
-    controllers = ["joint_state_broadcaster", "joint_trajectory_controller"]
+    controllers = ["joint_state_broadcaster", "joint_trajectory_controller", "diff_drive_controller", "effort_controller"]
     return LaunchDescription(
         [
             Node(

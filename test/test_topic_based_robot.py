@@ -35,16 +35,28 @@ from topic_based_robot import TopicBasedRobot
 
 rclpy.init()
 
-robot = TopicBasedRobot(["joint_1", "joint_2", "joint_3"])
+robot = TopicBasedRobot(["joint_1", "joint_2", "joint_3"], ["left_wheel_joint", "right_wheel_joint"], ["rrr_base_joint"])
 # By default the joint_states should have the values from initial_value from rrr.urdf.xacro
-current_joint_state = robot.get_current_joint_state()
+current_joint_state = robot.get_current_position_joint_state()
 urdf_initial_values = [0.2, 0.3, 0.1]
 assert (
     current_joint_state == urdf_initial_values
 ), f"{current_joint_state=} != {urdf_initial_values=}"
 
-# Test setting the robot joint states
+# Test setting the robot joint position states
 joint_state = [0.1, 0.2, 0.3]
 robot.set_joint_positions(joint_state)
-current_joint_state = robot.get_current_joint_state()
+current_joint_state = robot.get_current_position_joint_state()
+assert current_joint_state == joint_state, f"{current_joint_state=} != {joint_state=}"
+
+# Test setting the robot joint velocity states
+joint_state = [0.4, 0.5]
+robot.set_joint_velocities(joint_state)
+current_joint_state = robot.get_current_velocity_joint_state()
+assert current_joint_state == joint_state, f"{current_joint_state=} != {joint_state=}"
+
+# Test setting the robot joint effort states
+joint_state = [0.6]
+robot.set_joint_efforts(joint_state)
+current_joint_state = robot.get_current_effort_joint_state()
 assert current_joint_state == joint_state, f"{current_joint_state=} != {joint_state=}"
