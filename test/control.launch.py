@@ -63,7 +63,7 @@ def generate_launch_description():
             Node(
                 package="controller_manager",
                 executable="spawner",
-                arguments=[controller],
+                arguments=[controller, "--param-file", str(ros2_controllers_file)],
             )
             for controller in controllers
         ],

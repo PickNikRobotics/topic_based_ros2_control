@@ -8,6 +8,40 @@ endif()
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
+# ROS 2 Lyrical installations used by Isaac ROS support Fast DDS and Zenoh.
+# Some snapshots still nominate Cyclone DDS as the CMake default even when it
+# is not installed. Prefer Zenoh for Lyrical unless a supported implementation
+# was explicitly selected through the environment or CMake.
+if("$ENV{ROS_DISTRO}" STREQUAL "lyrical")
+  set(_supported_rmw_implementations rmw_fastrtps_cpp rmw_zenoh_cpp)
+
+  if(NOT "$ENV{RMW_IMPLEMENTATION}" STREQUAL "")
+    set(_selected_rmw_implementation "$ENV{RMW_IMPLEMENTATION}")
+  elseif(DEFINED RMW_IMPLEMENTATION
+    AND NOT "${RMW_IMPLEMENTATION}" STREQUAL ""
+    AND NOT "${RMW_IMPLEMENTATION}" STREQUAL "rmw_cyclonedds_cpp")
+    set(_selected_rmw_implementation "${RMW_IMPLEMENTATION}")
+  else()
+    set(_selected_rmw_implementation "rmw_zenoh_cpp")
+  endif()
+
+  list(FIND _supported_rmw_implementations
+    "${_selected_rmw_implementation}" _selected_rmw_index)
+  if(_selected_rmw_index EQUAL -1)
+    message(FATAL_ERROR
+      "Unsupported RMW implementation '${_selected_rmw_implementation}' for "
+      "ROS 2 Lyrical. Choose rmw_fastrtps_cpp or rmw_zenoh_cpp.")
+  endif()
+
+  set(RMW_IMPLEMENTATION "${_selected_rmw_implementation}"
+    CACHE STRING "Select ROS middleware implementation to link against" FORCE)
+  message(STATUS "Using RMW implementation '${RMW_IMPLEMENTATION}' for ROS 2 Lyrical")
+
+  unset(_selected_rmw_index)
+  unset(_selected_rmw_implementation)
+  unset(_supported_rmw_implementations)
+endif()
+
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   angles
   rclcpp

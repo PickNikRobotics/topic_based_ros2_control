@@ -31,6 +31,8 @@ pre-commit install
 To test the packages in topic_based_ros2_control, use the following command with [colcon](https://colcon.readthedocs.io/en/released/).
 
     export TEST_PACKAGES="PROJECT_PACKAGE_NAMES"
+    # Required for Isaac ROS testing on ROS 2 Lyrical.
+    export RMW_IMPLEMENTATION=rmw_zenoh_cpp
     colcon build --packages-up-to ${TEST_PACKAGES}
     colcon test --packages-select ${TEST_PACKAGES}
     colcon test-result
