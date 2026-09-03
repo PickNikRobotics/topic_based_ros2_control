@@ -28,7 +28,7 @@ These instructions assume you are running on Ubuntu 22.04:
 4. Get the repo and install any dependencies:
 
         cd $COLCON_WS/src
-        git clone git@github.com:PickNikRobotics/topic_based_ros2_control.git
+        git clone https://github.com/NVIDIA-ISAAC-ROS/topic_based_ros2_control.git
 
         rosdep install --ignore-src --from-paths . -y
 
@@ -39,7 +39,19 @@ These instructions assume you are running on Ubuntu 22.04:
 5. Configure and build the workspace:
 
         cd $COLCON_WS
+
+   Isaac ROS on ROS 2 Lyrical uses Zenoh by default. Keep the middleware
+   selection explicit when building and running a Lyrical workspace:
+
+        export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+
+   Then build the workspace:
+
         colcon build --symlink-install --event-handlers log-
+
+   Start a Zenoh router before launching ROS nodes:
+
+        ros2 run rmw_zenoh_cpp rmw_zenohd
 
 8. Source the workspace.
 

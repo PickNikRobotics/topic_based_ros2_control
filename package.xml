@@ -11,13 +11,13 @@
   <license>BSD</license>
 
   <url type="website">
-    https://github.com/PickNikRobotics/topic_based_ros2_control
+    https://github.com/NVIDIA-ISAAC-ROS/topic_based_ros2_control
   </url>
   <url type="bugtracker">
-    https://github.com/PickNikRobotics/topic_based_ros2_control/issues
+    https://github.com/NVIDIA-ISAAC-ROS/topic_based_ros2_control/issues
   </url>
   <url type="repository">
-    https://github.com/PickNikRobotics/topic_based_ros2_control/
+    https://github.com/NVIDIA-ISAAC-ROS/topic_based_ros2_control/
   </url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -26,6 +26,7 @@
   <depend>rclcpp</depend>
   <depend>hardware_interface</depend>
   <depend>sensor_msgs</depend>
+  <depend condition="$ROS_DISTRO == 'lyrical'">rmw_zenoh_cpp</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
