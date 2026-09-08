@@ -29,7 +29,12 @@ add_library(
   ${PROJECT_NAME}
   src/topic_based_system.cpp
 )
-ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  angles::angles
+  hardware_interface::hardware_interface
+  rclcpp::rclcpp
+  ${sensor_msgs_TARGETS}
+)
 target_include_directories(${PROJECT_NAME}
   PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<INSTALL_INTERFACE:include>)
@@ -69,8 +74,9 @@ if(BUILD_TESTING)
   # GTests
   ament_add_gtest(topic_based_system_test test/topic_based_system_test.cpp)
   target_link_libraries(topic_based_system_test
-    ${PROJECT_NAME})
-  ament_target_dependencies(topic_based_system_test ${THIS_PACKAGE_INCLUDE_DEPENDS} ros2_control_test_assets)
+    ${PROJECT_NAME}
+    ros2_control_test_assets::ros2_control_test_assets
+  )
 
   # Integration tests
   add_ros_test(
