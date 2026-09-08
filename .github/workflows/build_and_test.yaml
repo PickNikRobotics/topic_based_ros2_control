@@ -22,7 +22,7 @@ jobs:
         env:
           - ROS_DISTRO: jazzy
           - ROS_DISTRO: humble
-          - ROS_DISTRO: lyrical
+          - ROS_DISTRO: rolling
 
     env:
       CCACHE_DIR: /github/home/.ccache
