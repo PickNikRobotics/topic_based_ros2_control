@@ -40,6 +40,11 @@
 #include <hardware_interface/handle.hpp>
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
+#if __has_include(<hardware_interface/hardware_interface/version.h>)
+#include <hardware_interface/hardware_interface/version.h>
+#else
+#include <hardware_interface/version.h>
+#endif
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/node.hpp>
@@ -55,7 +60,11 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 class TopicBasedSystem : public hardware_interface::SystemInterface
 {
 public:
+#if HARDWARE_INTERFACE_VERSION_GTE(6, 0, 0)
+  CallbackReturn on_init(const hardware_interface::HardwareComponentInterfaceParams& params) override;
+#else
   CallbackReturn on_init(const hardware_interface::HardwareInfo& info) override;
+#endif
 
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 

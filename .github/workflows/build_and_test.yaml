@@ -3,6 +3,9 @@
 
 name: Build and Test
 
+permissions:
+  contents: read
+
 # This determines when this workflow is run
 on:
   workflow_dispatch:
@@ -16,27 +19,32 @@ on:
 
 jobs:
   industrial_ci:
+    name: industrial_ci (${{ matrix.env.ROS_DISTRO }})
     strategy:
       fail-fast: false
       matrix:
         env:
-          - ROS_DISTRO: jazzy
           - ROS_DISTRO: humble
+            ROS_REPO: main
+          - ROS_DISTRO: jazzy
+            ROS_REPO: main
+          - ROS_DISTRO: lyrical
+            ROS_REPO: main
           - ROS_DISTRO: rolling
+            ROS_REPO: testing
 
     env:
       CCACHE_DIR: /github/home/.ccache
       CXXFLAGS: "-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls"
-      ROS_REPO: main
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       # This step will fetch/store the directory used by ccache before/after the ci run
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-{{ matrix.env.ROS_DISTRO }}-{{ matrix.env.ROS_REPO }}
+          key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
       # Run industrial_ci
-      - uses: 'ros-industrial/industrial_ci@master'
+      - uses: ros-industrial/industrial_ci@125164b9f1883cdf1858897a7146d1bebf2be5c6 # master
         env: ${{ matrix.env }}
