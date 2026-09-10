@@ -8,7 +8,7 @@
   <maintainer email="jafar@picknik.ai">Jafar</maintainer>
   <author email="jafar@picknik.ai">Jafar</author>
 
-  <license>BSD</license>
+  <license>BSD-3-Clause</license>
 
   <url type="website">
     https://github.com/PickNikRobotics/topic_based_ros2_control
