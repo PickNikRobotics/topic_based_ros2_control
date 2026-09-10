@@ -61,9 +61,15 @@ static constexpr std::size_t VELOCITY_INTERFACE_INDEX = 1;
 // JointState doesn't contain an acceleration field, so right now it's not used
 static constexpr std::size_t EFFORT_INTERFACE_INDEX = 3;
 
+#if HARDWARE_INTERFACE_VERSION_GTE(6, 0, 0)
+CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareComponentInterfaceParams& params)
+{
+  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS)
+#else
 CallbackReturn TopicBasedSystem::on_init(const hardware_interface::HardwareInfo& info)
 {
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
+#endif
   {
     return CallbackReturn::ERROR;
   }
